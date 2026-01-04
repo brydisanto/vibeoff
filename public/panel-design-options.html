@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchup Panel - Design Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Titan+One&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 60px;
+            font-size: 24px;
+            font-family: 'Titan One', cursive;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 80px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .option-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .label {
+            color: #888;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        /* Placeholder image */
+        .image-placeholder {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 14px;
+        }
+
+        /* Option 1: Current Style */
+        .card1 {
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card1 .content {
+            padding: 16px;
+        }
+
+        .card1 h3 {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .card1 .owner {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .card1 .stats {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card1 .stat {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .card1 .stat-label {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card1 .stat-value {
+            font-size: 18px;
+            font-weight: 900;
+            color: #FFD700;
+        }
+
+        .card1 .stat-value.secondary {
+            color: #888;
+        }
+
+        /* Option 2: Minimal Clean */
+        .card2 {
+            width: 100%;
+            background: transparent;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card2 .image-placeholder {
+            border-radius: 12px;
+        }
+
+        .card2 .content {
+            padding: 12px 0;
+            text-align: center;
+        }
+
+        .card2 h3 {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .card2 .wins {
+            font-size: 12px;
+            color: #FFD700;
+        }
+
+        /* Option 3: Gold Border Accent */
+        .card3 {
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+        }
+
+        .card3 .content {
+            padding: 16px;
+        }
+
+        .card3 h3 {
+            font-size: 14px;
+            color: #FFD700;
+            margin-bottom: 8px;
+        }
+
+        .card3 .owner {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .card3 .wins-badge {
+            display: inline-block;
+            background: #FFD700;
+            color: black;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        /* Option 4: Floating Stats */
+        .card4 {
+            width: 100%;
+            position: relative;
+        }
+
+        .card4 .image-placeholder {
+            border-radius: 16px;
+        }
+
+        .card4 .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            border-radius: 0 0 16px 16px;
+        }
+
+        .card4 h3 {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .card4 .stats-row {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+        }
+
+        .card4 .stat {
+            color: #888;
+        }
+
+        .card4 .stat span {
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        /* Option 5: Compact Badge */
+        .card5 {
+            width: 100%;
+            position: relative;
+        }
+
+        .card5 .image-placeholder {
+            border-radius: 12px;
+        }
+
+        .card5 .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .card5 .badge .wins {
+            font-size: 18px;
+            font-weight: 900;
+            color: #FFD700;
+        }
+
+        .card5 .badge .label {
+            font-size: 8px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .card5 .name-bar {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            font-size: 12px;
+            color: white;
+        }
+
+        /* Option 6: Glass Morphism */
+        .card6 {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card6 .image-placeholder {
+            border-radius: 0;
+        }
+
+        .card6 .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card6 h3 {
+            font-size: 16px;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .card6 .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .card6 .stat {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .card6 .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+
+        .card6 .stat-label {
+            font-size: 8px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Matchup Panel Options</h1>
+
+    <div class="options-container">
+        <div class="option-section">
+            <div class="label">1: CURRENT STYLE</div>
+            <div class="card1">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="content">
+                    <h3>GVC #1234</h3>
+                    <div class="owner">OWNER 0x369...55e5</div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-label">Total Wins</div>
+                            <div class="stat-value">42</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Matches</div>
+                            <div class="stat-value secondary">89</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Win Rate</div>
+                            <div class="stat-value secondary">47%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="label">2: MINIMAL CLEAN</div>
+            <div class="card2">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="content">
+                    <h3>GVC #1234</h3>
+                    <div class="wins">42 wins</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="label">3: GOLD BORDER ACCENT</div>
+            <div class="card3">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="content">
+                    <h3>GVC #1234</h3>
+                    <div class="owner">0x369...55e5</div>
+                    <div class="wins-badge">🏆 42 WINS</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="label">4: FLOATING STATS</div>
+            <div class="card4">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="overlay">
+                    <h3>GVC #1234</h3>
+                    <div class="stats-row">
+                        <div class="stat"><span>42</span> wins</div>
+                        <div class="stat"><span>89</span> matches</div>
+                        <div class="stat"><span>47%</span> rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="label">5: COMPACT BADGE</div>
+            <div class="card5">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="badge">
+                    <div class="wins">42</div>
+                    <div class="label">wins</div>
+                </div>
+                <div class="name-bar">GVC #1234</div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="label">6: GLASS MORPHISM</div>
+            <div class="card6">
+                <div class="image-placeholder">NFT Image</div>
+                <div class="content">
+                    <h3>GVC #1234</h3>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-value">42</div>
+                            <div class="stat-label">Wins</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">89</div>
+                            <div class="stat-label">Matches</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">47%</div>
+                            <div class="stat-label">Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote Status Design Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 40px 20px;
+        }
+
+        .option-label {
+            background: linear-gradient(90deg, #FFCC4D, #FFD700);
+            color: #000;
+            padding: 8px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: inline-block;
+            border-radius: 4px;
+        }
+
+        .option-container {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            border: 1px solid #333;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #0a0a0a;
+            padding: 30px;
+        }
+
+        .gvc-gold {
+            color: #FFCC4D;
+        }
+
+        .text-gray {
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="text-align: center; margin-bottom: 60px;">
+        <h1 style="font-size: 2.5rem; color: #FFCC4D; margin-bottom: 16px;">Vote Status Section - Design Options</h1>
+        <p style="color: #888;">Making it bigger and bolder</p>
+    </div>
+
+    <!-- Current Design for Reference -->
+    <div class="option-container">
+        <div class="option-label">CURRENT DESIGN (for reference)</div>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <div
+                style="display: flex; justify-content: space-between; font-size: 14px; color: #888; margin-bottom: 8px;">
+                <span>100%</span>
+                <span>1 total votes</span>
+                <span>0%</span>
+            </div>
+            <div style="height: 12px; background: #222; border-radius: 999px; overflow: hidden; display: flex;">
+                <div style="width: 100%; background: linear-gradient(90deg, #FFCC4D, #FFD700);"></div>
+            </div>
+            <div style="text-align: center; margin-top: 24px;">
+                <div
+                    style="display: inline-block; background: rgba(255,204,77,0.1); border: 1px solid rgba(255,204,77,0.3); border-radius: 8px; padding: 12px 24px;">
+                    <span style="color: #FFCC4D; font-weight: bold;">✓ You've voted! Come back tomorrow for a new
+                        matchup.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION A: Large Stats Panel -->
+    <div class="option-container">
+        <div class="option-label">OPTION A: Large Stats Panel</div>
+        <div style="max-width: 700px; margin: 0 auto;">
+            <!-- Big vote counts -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; font-weight: bold; color: #FFCC4D;">1</div>
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px;">Votes
+                    </div>
+                </div>
+                <div style="flex: 1; padding: 0 40px;">
+                    <div style="text-align: center; margin-bottom: 8px;">
+                        <span
+                            style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 2px;">Total
+                            Votes</span>
+                    </div>
+                    <div style="height: 20px; background: #222; border-radius: 999px; overflow: hidden; display: flex;">
+                        <div style="width: 100%; background: linear-gradient(90deg, #FFCC4D, #FFD700);"></div>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-top: 8px;">
+                        <span style="color: #FFCC4D;">100%</span>
+                        <span style="color: #666;">0%</span>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 4rem; font-weight: bold; color: #666;">0</div>
+                    <div style="font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px;">Votes
+                    </div>
+                </div>
+            </div>
+            <!-- Success Message -->
+            <div
+                style="background: linear-gradient(135deg, rgba(255,204,77,0.15), rgba(255,204,77,0.05)); border: 2px solid #FFCC4D; border-radius: 16px; padding: 20px 32px; text-align: center; margin-top: 24px;">
+                <div style="font-size: 24px; margin-bottom: 4px;">✓</div>
+                <div style="font-size: 18px; font-weight: bold; color: #FFCC4D;">You've voted!</div>
+                <div style="font-size: 14px; color: #888; margin-top: 4px;">Come back tomorrow for a new matchup</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION B: Full-Width Results Banner -->
+    <div class="option-container">
+        <div class="option-label">OPTION B: Full-Width Results Banner</div>
+        <div style="max-width: 800px; margin: 0 auto;">
+            <!-- Wide banner -->
+            <div
+                style="background: linear-gradient(135deg, #1a1a0a, #0a0a0a); border: 1px solid rgba(255,204,77,0.3); border-radius: 20px; padding: 32px; position: relative; overflow: hidden;">
+                <!-- Percentage labels -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-size: 48px; font-weight: bold; color: #FFCC4D;">100%</span>
+                    <span style="font-size: 48px; font-weight: bold; color: #444;">0%</span>
+                </div>
+                <!-- Wide progress bar -->
+                <div
+                    style="height: 24px; background: #222; border-radius: 12px; overflow: hidden; display: flex; margin-bottom: 16px;">
+                    <div
+                        style="width: 100%; background: linear-gradient(90deg, #FFCC4D, #FFD700); border-radius: 12px;">
+                    </div>
+                </div>
+                <!-- Vote count centered -->
+                <div
+                    style="text-align: center; color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">
+                    1 Total Vote
+                </div>
+            </div>
+            <!-- Success pill -->
+            <div style="text-align: center; margin-top: 20px;">
+                <div
+                    style="display: inline-flex; align-items: center; gap: 12px; background: #FFCC4D; color: #000; font-weight: bold; padding: 16px 32px; border-radius: 999px; font-size: 16px;">
+                    <span style="font-size: 20px;">✓</span>
+                    <span>YOUR VOTE IS IN!</span>
+                </div>
+                <div style="color: #666; font-size: 13px; margin-top: 12px;">Come back tomorrow for a new matchup</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION C: Compact Bold Stats -->
+    <div class="option-container">
+        <div class="option-label">OPTION C: Compact Bold Stats</div>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <!-- Stats row -->
+            <div style="display: flex; justify-content: center; gap: 48px; margin-bottom: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 56px; font-weight: bold; color: #FFCC4D; line-height: 1;">1</div>
+                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 3px;">Vote
+                        (100%)</div>
+                </div>
+                <div style="width: 1px; background: #333;"></div>
+                <div style="text-align: center;">
+                    <div style="font-size: 56px; font-weight: bold; color: #444; line-height: 1;">0</div>
+                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 3px;">Vote (0%)
+                    </div>
+                </div>
+            </div>
+            <!-- Bold progress bar -->
+            <div
+                style="height: 16px; background: #222; border-radius: 8px; overflow: hidden; display: flex; margin-bottom: 24px;">
+                <div style="width: 100%; background: linear-gradient(90deg, #FFCC4D, #FFD700);"></div>
+            </div>
+            <!-- Success message inline -->
+            <div
+                style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(255,204,77,0.1); border: 2px solid rgba(255,204,77,0.4); border-radius: 12px; padding: 16px 24px;">
+                <span style="font-size: 24px; color: #FFCC4D;">✓</span>
+                <div>
+                    <div style="font-size: 16px; font-weight: bold; color: #FFCC4D;">Vote Recorded!</div>
+                    <div style="font-size: 12px; color: #888;">New matchup tomorrow at 12 PM EST</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION D: Minimal Bold -->
+    <div class="option-container">
+        <div class="option-label">OPTION D: Minimal Bold with Animated Bar</div>
+        <div style="max-width: 600px; margin: 0 auto;">
+            <!-- Large centered vote count -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div
+                    style="font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">
+                    Total Votes</div>
+                <div style="font-size: 64px; font-weight: bold; color: #FFCC4D; line-height: 1;">1</div>
+            </div>
+            <!-- Thick bar with glow -->
+            <div
+                style="height: 32px; background: #1a1a1a; border-radius: 16px; overflow: hidden; display: flex; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
+                <div
+                    style="width: 100%; background: linear-gradient(90deg, #FFCC4D, #FFD700); box-shadow: 0 0 24px rgba(255,204,77,0.5); border-radius: 16px;">
+                </div>
+            </div>
+            <!-- Percentages below bar -->
+            <div style="display: flex; justify-content: space-between; margin-top: 12px;">
+                <span style="font-size: 24px; font-weight: bold; color: #FFCC4D;">100%</span>
+                <span style="font-size: 24px; font-weight: bold; color: #444;">0%</span>
+            </div>
+            <!-- Success badge -->
+            <div style="text-align: center; margin-top: 32px;">
+                <div
+                    style="display: inline-block; background: #FFCC4D; color: #000; font-weight: bold; padding: 14px 28px; border-radius: 12px; font-size: 15px;">
+                    ✓ VOTE RECORDED
+                </div>
+                <div style="color: #666; font-size: 13px; margin-top: 10px;">New matchup drops tomorrow at noon EST
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

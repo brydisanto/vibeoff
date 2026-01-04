@@ -1,0 +1,188 @@
+{
+  "characters": [
+    {
+      "id": 1,
+      "name": "Good Vibe #1",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/1",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/1.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Good Vibe #2",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/2",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/2.jpg"
+    },
+    {
+      "id": 3,
+      "name": "Good Vibe #3",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/3",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/3.jpg"
+    },
+    {
+      "id": 4,
+      "name": "Good Vibe #4",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/4",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/4.jpg"
+    },
+    {
+      "id": 5,
+      "name": "Good Vibe #5",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/5",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5.jpg"
+    },
+    {
+      "id": 6,
+      "name": "Good Vibe #6",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/6",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6.jpg"
+    },
+    {
+      "id": 7,
+      "name": "Good Vibe #7",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/7",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/7.jpg"
+    },
+    {
+      "id": 8,
+      "name": "Good Vibe #8",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/8",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/8.jpg"
+    },
+    {
+      "id": 9,
+      "name": "Good Vibe #9",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/9",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/9.jpg"
+    },
+    {
+      "id": 10,
+      "name": "Good Vibe #10",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/10",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/10.jpg"
+    },
+    {
+      "id": 11,
+      "name": "Good Vibe #11",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/11",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/11.jpg"
+    },
+    {
+      "id": 12,
+      "name": "Good Vibe #12",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/12",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/12.jpg"
+    },
+    {
+      "id": 13,
+      "name": "Good Vibe #13",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/13",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/13.jpg"
+    },
+    {
+      "id": 14,
+      "name": "Good Vibe #14",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/14",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/14.jpg"
+    },
+    {
+      "id": 15,
+      "name": "Good Vibe #15",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/15",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/15.jpg"
+    },
+    {
+      "id": 16,
+      "name": "Good Vibe #16",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/16",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/16.jpg"
+    },
+    {
+      "id": 17,
+      "name": "Good Vibe #17",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/17",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/17.jpg"
+    },
+    {
+      "id": 18,
+      "name": "Good Vibe #18",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/18",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/18.jpg"
+    },
+    {
+      "id": 19,
+      "name": "Good Vibe #19",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/19",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/19.jpg"
+    },
+    {
+      "id": 20,
+      "name": "Good Vibe #20",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/20",
+      "image": "https://ipfs.io/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/20.jpg"
+    }
+  ],
+  "user_state": {
+    "last_played_date": "2025-12-16",
+    "votes_today": 0
+  }
+}

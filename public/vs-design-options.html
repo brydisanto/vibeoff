@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Button - Titan One Font Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-family: 'Titan One', cursive;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 60px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .label {
+            color: #888;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .vs-font {
+            font-family: 'Titan One', cursive;
+            font-style: italic;
+        }
+
+        /* Option 1: Original Gold Circle */
+        .option1 {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #0a0a0a;
+            border: 3px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .option1 span {
+            font-size: 28px;
+            color: #FFD700;
+        }
+
+        /* Option 2: Smaller Circle */
+        .option2 {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #0a0a0a;
+            border: 2px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option2 span {
+            font-size: 18px;
+            color: #FFD700;
+        }
+
+        /* Option 3: No Border, Just Text */
+        .option3 span {
+            font-size: 32px;
+            color: #FFD700;
+        }
+
+        /* Option 4: Underline */
+        .option4 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .option4 span {
+            font-size: 24px;
+            color: #FFD700;
+        }
+
+        .option4 .bar {
+            width: 40px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 2px;
+        }
+
+        /* Option 5: Side Lines */
+        .option5 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option5 .line {
+            width: 30px;
+            height: 2px;
+            background: #FFD700;
+        }
+
+        .option5 span {
+            font-size: 20px;
+            color: #FFD700;
+        }
+
+        /* Option 6: Gray/Muted */
+        .option6 span {
+            font-size: 24px;
+            color: #555;
+        }
+
+        /* Option 7: Solid Gold Pill */
+        .option7 {
+            padding: 8px 16px;
+            background: #FFD700;
+            border-radius: 20px;
+        }
+
+        .option7 span {
+            font-size: 18px;
+            color: black;
+        }
+
+        /* Option 8: Diamond Shape */
+        .option8 {
+            width: 55px;
+            height: 55px;
+            background: transparent;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option8 span {
+            font-size: 18px;
+            color: #FFD700;
+            transform: rotate(-45deg);
+        }
+
+        /* Option 9: Glow Effect */
+        .option9 span {
+            font-size: 28px;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Option 10: Split Badge Style */
+        .option10 {
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .option10 .left,
+        .option10 .right {
+            width: 8px;
+            background: #1a1a1a;
+        }
+
+        .option10 .center {
+            padding: 6px 12px;
+            background: transparent;
+        }
+
+        .option10 span {
+            font-size: 18px;
+            color: #666;
+        }
+
+        /* Option 11: Tiny Subtle */
+        .option11 span {
+            font-size: 14px;
+            color: #444;
+            letter-spacing: 2px;
+        }
+
+        /* Option 12: Large Bold */
+        .option12 span {
+            font-size: 42px;
+            color: #FFD700;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>VS Button Options</h1>
+    <p class="subtitle">All using Titan One italic font</p>
+
+    <div class="grid">
+        <div class="option">
+            <div class="label">1: ORIGINAL CIRCLE</div>
+            <div class="option1">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">2: SMALLER CIRCLE</div>
+            <div class="option2">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">3: TEXT ONLY</div>
+            <div class="option3">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">4: UNDERLINE</div>
+            <div class="option4">
+                <span class="vs-font">VS</span>
+                <div class="bar"></div>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">5: SIDE LINES</div>
+            <div class="option5">
+                <div class="line"></div>
+                <span class="vs-font">VS</span>
+                <div class="line"></div>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">6: MUTED GRAY</div>
+            <div class="option6">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">7: GOLD PILL</div>
+            <div class="option7">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">8: DIAMOND</div>
+            <div class="option8">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">9: GLOW</div>
+            <div class="option9">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">10: SUBTLE BADGE</div>
+            <div class="option10">
+                <div class="left"></div>
+                <div class="center"><span class="vs-font">VS</span></div>
+                <div class="right"></div>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">11: TINY SUBTLE</div>
+            <div class="option11">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+
+        <div class="option">
+            <div class="label">12: LARGE BOLD</div>
+            <div class="option12">
+                <span class="vs-font">VS</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

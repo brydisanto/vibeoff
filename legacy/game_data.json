@@ -1,0 +1,168 @@
+{
+  "characters": [
+    {
+      "id": 1,
+      "name": "Good Vibe #1",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/1"
+    },
+    {
+      "id": 2,
+      "name": "Good Vibe #2",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/2"
+    },
+    {
+      "id": 3,
+      "name": "Good Vibe #3",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/3"
+    },
+    {
+      "id": 4,
+      "name": "Good Vibe #4",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/4"
+    },
+    {
+      "id": 5,
+      "name": "Good Vibe #5",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/5"
+    },
+    {
+      "id": 6,
+      "name": "Good Vibe #6",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/6"
+    },
+    {
+      "id": 7,
+      "name": "Good Vibe #7",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/7"
+    },
+    {
+      "id": 8,
+      "name": "Good Vibe #8",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/8"
+    },
+    {
+      "id": 9,
+      "name": "Good Vibe #9",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/9"
+    },
+    {
+      "id": 10,
+      "name": "Good Vibe #10",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/10"
+    },
+    {
+      "id": 11,
+      "name": "Good Vibe #11",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/11"
+    },
+    {
+      "id": 12,
+      "name": "Good Vibe #12",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/12"
+    },
+    {
+      "id": 13,
+      "name": "Good Vibe #13",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/13"
+    },
+    {
+      "id": 14,
+      "name": "Good Vibe #14",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/14"
+    },
+    {
+      "id": 15,
+      "name": "Good Vibe #15",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/15"
+    },
+    {
+      "id": 16,
+      "name": "Good Vibe #16",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/16"
+    },
+    {
+      "id": 17,
+      "name": "Good Vibe #17",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/17"
+    },
+    {
+      "id": 18,
+      "name": "Good Vibe #18",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/18"
+    },
+    {
+      "id": 19,
+      "name": "Good Vibe #19",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/19"
+    },
+    {
+      "id": 20,
+      "name": "Good Vibe #20",
+      "wins": 0,
+      "losses": 0,
+      "matches": 0,
+      "url": "https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/20"
+    }
+  ],
+  "user_state": {
+    "last_played_date": "2025-12-16",
+    "votes_today": 0
+  }
+}

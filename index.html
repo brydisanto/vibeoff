@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Good Vibes Club - 1v1 Battles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vibe: {
+                            yellow: '#FFD700',
+                            orange: '#FFA500',
+                            dark: '#1a1a1a',
+                            card: '#2a2a2a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #1a1a1a; color: white; font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-vibe-card border-b border-gray-700 p-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-vibe-yellow to-vibe-orange">
+                Good Vibes Club
+            </h1>
+            <div class="space-x-4">
+                <button onclick="showGame()" class="hover:text-vibe-yellow transition">Battle</button>
+                <button onclick="showLeaderboard()" class="hover:text-vibe-yellow transition">Leaderboard</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-xl text-gray-400 animate-pulse">Loading Vibes...</div>
+
+        <!-- Limit Reached State -->
+        <div id="limit-reached" class="hidden text-center max-w-md">
+            <div class="text-6xl mb-4">🚫</div>
+            <h2 class="text-3xl font-bold mb-2">Daily Limit Reached</h2>
+            <p class="text-gray-400 mb-6">You've cast your 10 votes for today. Check out the leaderboard or come back tomorrow!</p>
+            <button onclick="showLeaderboard()" class="bg-vibe-yellow text-black px-6 py-3 rounded-full font-bold hover:bg-white transition">View Leaderboard</button>
+        </div>
+
+        <!-- Battle Arena -->
+        <div id="arena" class="hidden w-full max-w-4xl">
+            <div class="text-center mb-8">
+                <h2 class="text-xl text-gray-400">Which Vibe is Better?</h2>
+                <div class="text-sm text-gray-600 mt-1">Votes Remaining Today: <span id="votes-left" class="text-vibe-yellow font-bold">--</span></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <!-- Left Fighter -->
+                <div id="left-card" class="bg-vibe-card rounded-2xl p-6 cursor-pointer card-hover border border-gray-700 hover:border-vibe-yellow" onclick="vote('left')">
+                    <img id="left-img" src="" alt="Vibe 1" class="w-full aspect-square object-cover rounded-xl mb-4 bg-gray-800">
+                    <h3 id="left-name" class="text-2xl font-bold mb-2">Vibe #1</h3>
+                    <div class="flex justify-between text-sm text-gray-400">
+                        <span>Has <span id="left-wins">0</span> Wins</span>
+                        <a id="left-link" href="#" target="_blank" class="text-vibe-yellow hover:underline" onclick="event.stopPropagation()">View on OpenSea</a>
+                    </div>
+                </div>
+
+                <!-- Right Fighter -->
+                <div id="right-card" class="bg-vibe-card rounded-2xl p-6 cursor-pointer card-hover border border-gray-700 hover:border-vibe-yellow" onclick="vote('right')">
+                    <img id="right-img" src="" alt="Vibe 2" class="w-full aspect-square object-cover rounded-xl mb-4 bg-gray-800">
+                    <h3 id="right-name" class="text-2xl font-bold mb-2">Vibe #2</h3>
+                    <div class="flex justify-between text-sm text-gray-400">
+                        <span>Has <span id="right-wins">0</span> Wins</span>
+                        <a id="right-link" href="#" target="_blank" class="text-vibe-yellow hover:underline" onclick="event.stopPropagation()">View on OpenSea</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12 text-gray-500 text-sm">
+                Click a card to vote!
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="hidden w-full max-w-4xl">
+             <h2 class="text-3xl font-bold mb-6 text-center">Top Vibes</h2>
+             <div class="bg-vibe-card rounded-2xl overflow-hidden border border-gray-700">
+                 <table class="w-full text-left">
+                     <thead class="bg-black/30 text-gray-400">
+                         <tr>
+                             <th class="p-4">Rank</th>
+                             <th class="p-4">Character</th>
+                             <th class="p-4 text-center">Wins</th>
+                             <th class="p-4 text-center">Matches</th>
+                             <th class="p-4 text-center">Win Rate</th>
+                             <th class="p-4 text-right">Link</th>
+                         </tr>
+                     </thead>
+                     <tbody id="leaderboard-body" class="divide-y divide-gray-700">
+                         <!-- Rows injected via JS -->
+                     </tbody>
+                 </table>
+             </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMatchup = null;
+
+        async function init() {
+            await loadMatchup();
+        }
+
+        async function loadMatchup() {
+            showSection('loading');
+            try {
+                const res = await fetch('/api/matchup');
+                if (res.status === 403) {
+                    showSection('limit-reached');
+                    return;
+                }
+                const data = await res.json();
+                currentMatchup = { left: data[0], right: data[1] };
+                renderMatchup();
+                // update votes left (optimistic or fetched) - usually we'd fetch user state, but let's assume valid for now
+                showSection('arena');
+            } catch (e) {
+                console.error("Failed to load matchup", e);
+            }
+        }
+
+        function renderMatchup() {
+            if (!currentMatchup) return;
+            const l = currentMatchup.left;
+            const r = currentMatchup.right;
+
+            document.getElementById('left-img').src = l.image;
+            document.getElementById('left-name').innerText = l.name;
+            document.getElementById('left-wins').innerText = l.wins;
+            document.getElementById('left-link').href = l.url;
+
+            document.getElementById('right-img').src = r.image;
+            document.getElementById('right-name').innerText = r.name;
+            document.getElementById('right-wins').innerText = r.wins;
+            document.getElementById('right-link').href = r.url;
+            
+            // For votes remaining, we can't easily get it without another API call or returning it in payload.
+            // For prototype hack, we ignore updating the number until after vote.
+        }
+
+        async function vote(side) {
+            if (!currentMatchup) return;
+            
+            const winner = side === 'left' ? currentMatchup.left : currentMatchup.right;
+            const loser = side === 'left' ? currentMatchup.right : currentMatchup.left;
+
+            try {
+                const res = await fetch('/api/vote', {
+                    method: 'POST',
+                    body: JSON.stringify({ winnerId: winner.id, loserId: loser.id })
+                });
+                
+                if (res.status === 403) {
+                    showSection('limit-reached');
+                    return;
+                }
+                
+                const json = await res.json();
+                
+                // Update votes left display
+                if (json.votes_today !== undefined) {
+                    const remaining = 10 - json.votes_today;
+                    document.getElementById('votes-left').innerText = remaining;
+                    if (remaining <= 0) {
+                        showSection('limit-reached');
+                        return;
+                    }
+                }
+
+                // Load next
+                await loadMatchup();
+
+            } catch (e) {
+                console.error("Vote failed", e);
+            }
+        }
+
+        async function showLeaderboard() {
+            showSection('loading');
+            try {
+                const res = await fetch('/api/leaderboard');
+                const data = await res.json();
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = '';
+                
+                data.forEach((char, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-white/5 transition";
+                    tr.innerHTML = `
+                        <td class="p-4 font-bold text-vibe-yellow">#${index + 1}</td>
+                        <td class="p-4 flex items-center gap-3">
+                            <img src="${char.image}" class="w-10 h-10 rounded-full bg-gray-700">
+                            ${char.name}
+                        </td>
+                        <td class="p-4 text-center font-mono">${char.wins}</td>
+                        <td class="p-4 text-center font-mono text-gray-500">${char.matches}</td>
+                        <td class="p-4 text-center font-bold">${char.win_rate.toFixed(1)}%</td>
+                        <td class="p-4 text-right">
+                             <a href="${char.url}" target="_blank" class="text-gray-400 hover:text-white">↗</a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                showSection('leaderboard');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function showGame() {
+            // Check if limit reached previously? We'll just try to load matchup
+            loadMatchup();
+        }
+
+        function showSection(id) {
+            ['loading', 'limit-reached', 'arena', 'leaderboard'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

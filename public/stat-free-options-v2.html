@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Card Design Options V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Titan+One&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #000;
+            color: white;
+        }
+
+        .font-cooper {
+            font-family: 'Titan One', cursive;
+        }
+
+        .text-gvc-gold {
+            color: #FFCC4D;
+        }
+
+        .border-gvc-gold {
+            border-color: #FFCC4D;
+        }
+
+        .bg-gvc-gold {
+            background-color: #FFCC4D;
+        }
+    </style>
+</head>
+
+<body class="p-8">
+
+    <h1 class="text-3xl font-bold mb-8 text-center text-gvc-gold">Refined Minimalist Options</h1>
+    <p class="text-center text-gray-500 mb-12">Base: Minimalist (Option A) + OpenSea Link</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+        <!-- Variation 1: Floating Overlay -->
+        <div class="flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-center text-white">1. Floating Overlay</h2>
+            <div
+                class="bg-[#1A1A1A] rounded-2xl overflow-hidden border border-white/10 hover:border-gvc-gold transition-all shadow-lg group cursor-pointer relative">
+                <div class="relative aspect-square bg-[#0a0a0a]">
+                    <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5555.jpg"
+                        class="w-full h-full object-cover">
+                    <!-- OpenSea Icon -->
+                    <div
+                        class="absolute top-3 right-3 bg-black/50 hover:bg-black/80 p-2 rounded-full cursor-pointer transition-colors backdrop-blur-sm border border-white/10">
+                        <img src="/opensea-v2.png" class="w-5 h-5 opacity-70 hover:opacity-100">
+                    </div>
+                </div>
+                <div class="p-5 text-center">
+                    <h3 class="text-2xl font-cooper text-white mb-1">GVC #5555</h3>
+                    <div class="text-xs text-gray-500 font-mono">OWNER: <span class="text-gvc-gold">0x9f2...c81</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 text-center">Icon floats on top of the art. Unobtrusive but accessible.</p>
+        </div>
+
+        <!-- Variation 2: Inline with Name -->
+        <div class="flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-center text-white">2. Inline with Name</h2>
+            <div
+                class="bg-[#1A1A1A] rounded-2xl overflow-hidden border border-white/10 hover:border-gvc-gold transition-all shadow-lg group cursor-pointer">
+                <div class="relative aspect-square bg-[#0a0a0a]">
+                    <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6666.jpg"
+                        class="w-full h-full object-cover">
+                </div>
+                <div class="p-5 text-center relative">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <h3 class="text-2xl font-cooper text-white">GVC #6666</h3>
+                        <a href="#" class="opacity-50 hover:opacity-100 transition-opacity">
+                            <img src="/opensea-v2.png" class="w-5 h-5">
+                        </a>
+                    </div>
+                    <div class="text-xs text-gray-500 font-mono">OWNER: <span class="text-gvc-gold">0x3b1...a92</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 text-center">Icon sits next to the title. Part of the identity.</p>
+        </div>
+
+        <!-- Variation 3: Footer Action -->
+        <div class="flex flex-col gap-4">
+            <h2 class="text-xl font-bold text-center text-white">3. Footer Corner</h2>
+            <div
+                class="bg-[#1A1A1A] rounded-2xl overflow-hidden border border-white/10 hover:border-gvc-gold transition-all shadow-lg group cursor-pointer">
+                <div class="relative aspect-square bg-[#0a0a0a]">
+                    <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/7777.jpg"
+                        class="w-full h-full object-cover">
+                </div>
+                <div class="p-5 flex justify-between items-center">
+                    <div class="text-left">
+                        <h3 class="text-2xl font-cooper text-white mb-1">GVC #7777</h3>
+                        <div class="text-xs text-gray-500 font-mono">OWNER: <span
+                                class="text-gvc-gold">0x1a4...d55</span></div>
+                    </div>
+                    <a href="#"
+                        class="bg-white/5 hover:bg-white/10 p-2 rounded-lg border border-white/5 transition-colors">
+                        <img src="/opensea-v2.png" class="w-6 h-6 opacity-70 hover:opacity-100">
+                    </a>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 text-center">Icon separated in the footer. Clean layout.</p>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
