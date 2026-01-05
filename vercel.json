@@ -3,6 +3,10 @@
     {
       "path": "/api/sync-owners",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/daily/discord/post",
+      "schedule": "0 0 * * *"
     }
   ]
 }

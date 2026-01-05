@@ -1,23 +1,24 @@
 ---
-description: Deploy the application to Vercel
+description: Deploy to production and commit to GitHub
 ---
 
-# Deploy to Vercel
+# Deploy to Production
 
-1. Check if the user is authenticated with Vercel:
-   ```bash
-   npx vercel whoami
-   ```
-   If not, ask the user to login via `npx vercel login`.
+When deploying changes to production, follow these steps:
 
-2. Run the deployment command:
-   ```bash
-   npx vercel
-   ```
+// turbo-all
+1. Commit and push changes to GitHub:
+```bash
+cd /Users/bryan/.gemini/antigravity/playground/neon-solstice && git add . && git commit -m "[describe changes]" && git push
+```
 
-3. If this receives a 403 or permissions error, it likely means we need the user to run this interactively in their own terminal because we cannot handle the interactive login/auth flow purely via the agent.
+2. Deploy to Vercel production:
+```bash
+cd /Users/bryan/.gemini/antigravity/playground/neon-solstice && npx vercel --prod --yes
+```
 
-4. Once deployed, run production build to confirm:
-   ```bash
-   npx vercel --prod
-   ```
+## Notes
+- Always commit to GitHub BEFORE deploying to Vercel
+- Use descriptive commit messages that summarize the changes
+- GitHub repo: https://github.com/brydisanto/vibeoff
+- Production URL: https://vibeoff.xyz
