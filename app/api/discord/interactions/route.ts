@@ -31,27 +31,33 @@ const InteractionResponseType = {
 async function verifyDiscordRequest(request: NextRequest, body: string): Promise<boolean> {
     const publicKey = process.env.DISCORD_PUBLIC_KEY;
     if (!publicKey) {
-        console.warn('DISCORD_PUBLIC_KEY not set, skipping verification');
+        console.warn('DISCORD_PUBLIC_KEY not set, allowing request');
         return true; // Allow in development
     }
 
     const signature = request.headers.get('x-signature-ed25519');
     const timestamp = request.headers.get('x-signature-timestamp');
 
-    if (!signature || !timestamp) return false;
+    if (!signature || !timestamp) {
+        console.warn('Missing signature headers');
+        return false;
+    }
 
     try {
         // Use nacl for Ed25519 verification
         const nacl = await import('tweetnacl');
-        const message = Buffer.from(timestamp + body);
-        const sig = Buffer.from(signature, 'hex');
-        const key = Buffer.from(publicKey, 'hex');
 
-        return nacl.sign.detached.verify(message, sig, key);
+        // Convert hex strings to Uint8Array
+        const sigBytes = new Uint8Array(signature.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+        const keyBytes = new Uint8Array(publicKey.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+        const msgBytes = new TextEncoder().encode(timestamp + body);
+
+        const isValid = nacl.sign.detached.verify(msgBytes, sigBytes, keyBytes);
+        console.log('Signature verification result:', isValid);
+        return isValid;
     } catch (error) {
         console.error('Signature verification error:', error);
-        // In case of library issues, allow request but log it
-        return true;
+        return false;
     }
 }
 
