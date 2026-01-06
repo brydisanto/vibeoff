@@ -167,8 +167,27 @@ export async function getCurrentDaily(): Promise<DailyMatchup> {
             await archiveMatchup(doubleCheck);
         }
 
-        // Generate new matchup
-        const { char1Id, char2Id } = generateRandomMatchup();
+        // Check for a pre-scheduled matchup first
+        const scheduledKey = `daily:scheduled:${currentDateKey}`;
+        const scheduled = await kv.get<DailyMatchup>(scheduledKey);
+
+        let char1Id: number, char2Id: number;
+
+        if (scheduled && scheduled.char1Id && scheduled.char2Id) {
+            // Use scheduled matchup
+            char1Id = scheduled.char1Id;
+            char2Id = scheduled.char2Id;
+            console.log(`[Daily] Using SCHEDULED matchup: ${char1Id} vs ${char2Id}`);
+            // Clean up the scheduled key
+            await kv.del(scheduledKey);
+        } else {
+            // Generate random matchup
+            const generated = generateRandomMatchup();
+            char1Id = generated.char1Id;
+            char2Id = generated.char2Id;
+            console.log(`[Daily] Generated random matchup: ${char1Id} vs ${char2Id}`);
+        }
+
         const newMatchup: DailyMatchup = {
             char1Id,
             char2Id,
