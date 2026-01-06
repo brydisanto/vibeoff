@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
                 {
                     description: `📊 **Stats:**\n• ${char1.name}: ${stats1.wins || 0}W - ${stats1.losses || 0}L (${winPct1}%)\n• ${char2.name}: ${stats2.wins || 0}W - ${stats2.losses || 0}L (${winPct2}%)\n\n⏰ Ends: **${endsAtFormatted}**`,
                     color: 0x2B2D31,
+                    footer: {
+                        text: 'Powered by @brydisanto',
+                    },
+                    timestamp: new Date().toISOString(),
                 }
             ],
             components: [
