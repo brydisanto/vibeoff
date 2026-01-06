@@ -41,40 +41,36 @@ export async function POST(request: NextRequest) {
             timeZoneName: 'short'
         });
 
-        // Build Discord message with embeds and buttons
+        // Build Discord message with TWO embeds for side-by-side images
+        // Same URL on embeds makes Discord display them side by side
         const messagePayload = {
+            content: '# 🔥 DAILY VIBE OFF! 🔥\nWhich GVC has the better vibes today? **Vote below!**',
             embeds: [
                 {
-                    title: '🔥 DAILY VIBE OFF! 🔥',
-                    description: `Which GVC has the better vibes today?\n\n**Vote now and see who the community picks!**`,
-                    color: 0xFFE048, // GVC Gold
-                    fields: [
-                        {
-                            name: `🟡 ${char1.name}`,
-                            value: `GVC #${char1.id}`,
-                            inline: true,
-                        },
-                        {
-                            name: '⚔️',
-                            value: 'VS',
-                            inline: true,
-                        },
-                        {
-                            name: `🟡 ${char2.name}`,
-                            value: `GVC #${char2.id}`,
-                            inline: true,
-                        },
-                    ],
+                    title: char1.name,
+                    url: 'https://vibeoff.xyz/daily', // Same URL groups embeds
+                    color: 0xFFE048,
                     image: {
-                        url: char1.url, // Show first character as main image
-                    },
-                    thumbnail: {
-                        url: char2.url, // Show second as thumbnail
+                        url: char1.url,
                     },
                     footer: {
-                        text: `Ends: ${endsAtFormatted} • Vote on vibeoff.xyz/daily for full experience!`,
+                        text: '👈 Vote Left',
                     },
-                    timestamp: new Date().toISOString(),
+                },
+                {
+                    title: char2.name,
+                    url: 'https://vibeoff.xyz/daily', // Same URL groups embeds
+                    color: 0xFFE048,
+                    image: {
+                        url: char2.url,
+                    },
+                    footer: {
+                        text: 'Vote Right 👉',
+                    },
+                },
+                {
+                    description: `⏰ Ends: **${endsAtFormatted}**\n\n[View full experience on website →](https://vibeoff.xyz/daily)`,
+                    color: 0x2B2D31, // Dark gray
                 }
             ],
             components: [
