@@ -122,8 +122,29 @@ export async function POST(request: NextRequest) {
                 }
             ],
         };
+    } else if (option === 'E') {
+        // Option E: Stacked Full Images (no cropping)
+        payload = {
+            content: '## **DESIGN OPTION E: Stacked Full Images**\n🔥 **DAILY VIBE OFF!** 🔥\nWhich GVC has the better vibes?',
+            embeds: [
+                {
+                    title: `👈 ${char1.name}`,
+                    color: 0xFFE048,
+                    image: { url: char1.url },
+                },
+                {
+                    title: `${char2.name} 👉`,
+                    color: 0xFFE048,
+                    image: { url: char2.url },
+                },
+                {
+                    description: '⏰ Ends: Tue Jan 6, 12:00 PM EST\n🌐 [Vote on website](https://vibeoff.xyz/daily)',
+                    color: 0x2B2D31,
+                }
+            ],
+        };
     } else {
-        return NextResponse.json({ error: 'Invalid option. Use B, C, or D' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid option. Use B, C, D, or E' }, { status: 400 });
     }
 
     const result = await postToDiscord(payload);
