@@ -133,9 +133,13 @@ export async function POST(request: NextRequest) {
             // Record the vote
             await kv.set(voteKey, choice, { ex: 86400 * 2 }); // Expires in 2 days
 
-            // Increment vote count in matchup
-            const voteField = choice === 1 ? 'votes1' : 'votes2';
-            await kv.hincrby(`daily:${dateKey}`, voteField, 1);
+            // Update vote count directly in matchup (same as website does)
+            if (choice === 1) {
+                matchup.votes1++;
+            } else {
+                matchup.votes2++;
+            }
+            await kv.set('daily:current', matchup);
 
             // Get updated stats
             const updatedMatchup = await getCurrentDaily();
