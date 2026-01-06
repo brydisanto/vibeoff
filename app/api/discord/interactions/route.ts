@@ -159,6 +159,28 @@ export async function POST(request: NextRequest) {
                 }
             });
         }
+
+        // Handle VIEW MATCHUP RESULTS button
+        if (customId === 'view_results') {
+            const matchup = await getCurrentDaily();
+            const char1 = INITIAL_CHARACTERS.find(c => c.id === matchup.char1Id);
+            const char2 = INITIAL_CHARACTERS.find(c => c.id === matchup.char2Id);
+
+            const totalVotes = matchup.votes1 + matchup.votes2;
+            const pct1 = totalVotes > 0 ? Math.round((matchup.votes1 / totalVotes) * 100) : 50;
+            const pct2 = totalVotes > 0 ? Math.round((matchup.votes2 / totalVotes) * 100) : 50;
+
+            const leader = matchup.votes1 > matchup.votes2 ? char1?.name :
+                matchup.votes2 > matchup.votes1 ? char2?.name : 'Tied';
+
+            return NextResponse.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `📊 **CURRENT MATCHUP RESULTS**\n\n🔥 ${char1?.name} vs ${char2?.name}\n\n• ${char1?.name}: **${matchup.votes1}** votes (${pct1}%)\n• ${char2?.name}: **${matchup.votes2}** votes (${pct2}%)\n\n📈 Total votes: ${totalVotes}\n🏆 Leading: **${leader}**\n\n🔗 [Vote on vibeoff.xyz](https://vibeoff.xyz/daily)`,
+                    flags: 64, // Ephemeral
+                }
+            });
+        }
     }
 
     // Default response
