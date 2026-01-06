@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentDaily, getNextRotationTime } from '@/lib/daily';
 import { INITIAL_CHARACTERS } from '@/lib/data';
+import { kv } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,36 +42,29 @@ export async function POST(request: NextRequest) {
             timeZoneName: 'short'
         });
 
-        // Build Discord message with TWO embeds for side-by-side images
-        // Same URL on embeds makes Discord display them side by side
+        // Get stats for premium display
+        const stats1 = await kv.hgetall(`stats:alltime:${char1.id}`) as Record<string, number> || {};
+        const stats2 = await kv.hgetall(`stats:alltime:${char2.id}`) as Record<string, number> || {};
+        const winPct1 = (stats1.matches || 0) > 0 ? Math.round(((stats1.wins || 0) / stats1.matches) * 100) : 0;
+        const winPct2 = (stats2.matches || 0) > 0 ? Math.round(((stats2.wins || 0) / stats2.matches) * 100) : 0;
+
+        // Build Discord message - collage style with stats
         const messagePayload = {
-            content: '# 🔥 DAILY VIBE OFF! 🔥\nWhich GVC has the better vibes today? **Vote below!**',
+            content: '# 🔥 THE DAILY VIBE OFF! 🔥\nOne matchup. 24 hours. Winner takes the vibes. **Vote below!**',
             embeds: [
                 {
-                    title: char1.name,
-                    url: 'https://vibeoff.xyz/daily', // Same URL groups embeds
+                    url: 'https://vibeoff.xyz/daily', // Same URL groups embeds side-by-side
                     color: 0xFFE048,
-                    image: {
-                        url: char1.url,
-                    },
-                    footer: {
-                        text: '👈 Vote Left',
-                    },
+                    image: { url: char1.url },
                 },
                 {
-                    title: char2.name,
-                    url: 'https://vibeoff.xyz/daily', // Same URL groups embeds
+                    url: 'https://vibeoff.xyz/daily',
                     color: 0xFFE048,
-                    image: {
-                        url: char2.url,
-                    },
-                    footer: {
-                        text: 'Vote Right 👉',
-                    },
+                    image: { url: char2.url },
                 },
                 {
-                    description: `⏰ Ends: **${endsAtFormatted}**\n\n[View full experience on website →](https://vibeoff.xyz/daily)`,
-                    color: 0x2B2D31, // Dark gray
+                    description: `📊 **Stats:**\n• ${char1.name}: ${stats1.wins || 0}W - ${stats1.losses || 0}L (${winPct1}%)\n• ${char2.name}: ${stats2.wins || 0}W - ${stats2.losses || 0}L (${winPct2}%)\n\n⏰ Ends: **${endsAtFormatted}**`,
+                    color: 0x2B2D31,
                 }
             ],
             components: [
@@ -80,16 +74,16 @@ export async function POST(request: NextRequest) {
                         {
                             type: 2, // Button
                             style: 1, // Primary (blue)
-                            label: `Vote ${char1.name}`,
+                            label: `#${char1.id}`,
                             custom_id: 'vote_1',
-                            emoji: { name: '👈' },
+                            emoji: { name: '⬅️' },
                         },
                         {
                             type: 2, // Button
                             style: 1, // Primary (blue)  
-                            label: `Vote ${char2.name}`,
+                            label: `#${char2.id}`,
                             custom_id: 'vote_2',
-                            emoji: { name: '👉' },
+                            emoji: { name: '➡️' },
                         },
                     ],
                 },
@@ -99,9 +93,8 @@ export async function POST(request: NextRequest) {
                         {
                             type: 2, // Button
                             style: 5, // Link
-                            label: 'Vote on Website',
+                            label: 'VOTE ON VIBEOFF.XYZ',
                             url: 'https://vibeoff.xyz/daily',
-                            emoji: { name: '🌐' },
                         },
                     ],
                 },
