@@ -100,6 +100,13 @@ export async function POST(request: NextRequest) {
                             label: 'VOTE ON VIBEOFF.XYZ',
                             url: 'https://vibeoff.xyz/daily',
                         },
+                        {
+                            type: 2, // Button
+                            style: 5, // Link (gray)
+                            label: 'VIEW MATCHUP RESULTS',
+                            url: 'https://vibeoff.xyz/daily',
+                            emoji: { name: '📊' },
+                        },
                     ],
                 },
             ],
