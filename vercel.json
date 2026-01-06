@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/daily/discord/post",
-      "schedule": "0 0 * * *"
+      "schedule": "0 17 * * *"
     }
   ]
 }

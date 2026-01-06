@@ -74,14 +74,14 @@ export async function POST(request: NextRequest) {
                         {
                             type: 2, // Button
                             style: 1, // Primary (blue)
-                            label: `#${char1.id}`,
+                            label: `GVC #${char1.id}`,
                             custom_id: 'vote_1',
                             emoji: { name: '⬅️' },
                         },
                         {
                             type: 2, // Button
                             style: 1, // Primary (blue)  
-                            label: `#${char2.id}`,
+                            label: `GVC #${char2.id}`,
                             custom_id: 'vote_2',
                             emoji: { name: '➡️' },
                         },
