@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
                             type: 2, // Button
                             style: 2, // Secondary (gray)
                             label: 'VIEW MATCHUP RESULTS',
-                            custom_id: 'view_results',
+                            custom_id: `view_results_${matchup.dateKey}`,
                             emoji: { name: '📊' },
                         },
                     ],

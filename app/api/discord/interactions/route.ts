@@ -160,23 +160,67 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Handle VIEW MATCHUP RESULTS button
-        if (customId === 'view_results') {
-            const matchup = await getCurrentDaily();
-            const char1 = INITIAL_CHARACTERS.find(c => c.id === matchup.char1Id);
-            const char2 = INITIAL_CHARACTERS.find(c => c.id === matchup.char2Id);
+        // Handle VIEW MATCHUP RESULTS button (view_results or view_results_YYYY-MM-DD)
+        if (customId === 'view_results' || customId.startsWith('view_results_')) {
+            // Parse dateKey from custom_id if present
+            const parts = customId.split('_');
+            const requestedDateKey = parts.length >= 3 ? parts.slice(2).join('_') : null;
 
-            const totalVotes = matchup.votes1 + matchup.votes2;
-            const pct1 = totalVotes > 0 ? Math.round((matchup.votes1 / totalVotes) * 100) : 50;
-            const pct2 = totalVotes > 0 ? Math.round((matchup.votes2 / totalVotes) * 100) : 50;
+            // Get current matchup to check if it's current or historical
+            const currentMatchup = await getCurrentDaily();
+            const isCurrentMatchup = !requestedDateKey || requestedDateKey === currentMatchup.dateKey;
 
-            const leader = matchup.votes1 > matchup.votes2 ? char1?.name :
-                matchup.votes2 > matchup.votes1 ? char2?.name : 'Tied';
+            let char1Id: number, char2Id: number, votes1: number, votes2: number, dateKey: string;
+            let matchupStatus: string;
+
+            if (isCurrentMatchup) {
+                // Show current matchup
+                char1Id = currentMatchup.char1Id;
+                char2Id = currentMatchup.char2Id;
+                votes1 = currentMatchup.votes1;
+                votes2 = currentMatchup.votes2;
+                dateKey = currentMatchup.dateKey;
+                matchupStatus = 'CURRENT MATCHUP';
+            } else {
+                // Fetch historical matchup from history
+                const historyData = await kv.lrange('daily:history', 0, 100) as string[];
+                const historyEntry = historyData
+                    .map(entry => typeof entry === 'string' ? JSON.parse(entry) : entry)
+                    .find((h: any) => h.dateKey === requestedDateKey);
+
+                if (!historyEntry) {
+                    return NextResponse.json({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            content: `❌ Could not find matchup results for ${requestedDateKey}`,
+                            flags: 64,
+                        }
+                    });
+                }
+
+                char1Id = historyEntry.char1Id;
+                char2Id = historyEntry.char2Id;
+                votes1 = historyEntry.votes1;
+                votes2 = historyEntry.votes2;
+                dateKey = historyEntry.dateKey;
+                matchupStatus = `FINAL RESULTS (${dateKey})`;
+            }
+
+            const char1 = INITIAL_CHARACTERS.find(c => c.id === char1Id);
+            const char2 = INITIAL_CHARACTERS.find(c => c.id === char2Id);
+
+            const totalVotes = votes1 + votes2;
+            const pct1 = totalVotes > 0 ? Math.round((votes1 / totalVotes) * 100) : 50;
+            const pct2 = totalVotes > 0 ? Math.round((votes2 / totalVotes) * 100) : 50;
+
+            const winner = votes1 > votes2 ? char1?.name :
+                votes2 > votes1 ? char2?.name : 'Tied';
+            const winnerLabel = isCurrentMatchup ? '🏆 Leading' : '🏆 Winner';
 
             return NextResponse.json({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `📊 **CURRENT MATCHUP RESULTS**\n\n🔥 ${char1?.name} vs ${char2?.name}\n\n• ${char1?.name}: **${matchup.votes1}** votes (${pct1}%)\n• ${char2?.name}: **${matchup.votes2}** votes (${pct2}%)\n\n📈 Total votes: ${totalVotes}\n🏆 Leading: **${leader}**\n\n🔗 [Vote on vibeoff.xyz](https://vibeoff.xyz/daily)`,
+                    content: `📊 **${matchupStatus}**\n\n🔥 ${char1?.name} vs ${char2?.name}\n\n• ${char1?.name}: **${votes1}** votes (${pct1}%)\n• ${char2?.name}: **${votes2}** votes (${pct2}%)\n\n📈 Total votes: ${totalVotes}\n${winnerLabel}: **${winner}**\n\n🔗 [View on vibeoff.xyz](https://vibeoff.xyz/daily)`,
                     flags: 64, // Ephemeral
                 }
             });
