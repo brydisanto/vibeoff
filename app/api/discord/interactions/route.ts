@@ -184,8 +184,13 @@ export async function POST(request: NextRequest) {
             } else {
                 // Fetch historical matchup from history (stored as zset)
                 const historyData = await kv.zrange('daily:history', 0, 100) as any[];
-                const historyEntry = historyData
-                    .find((h: any) => h.dateKey === requestedDateKey);
+                // Filter by dateKey and pick the one with most votes (the actual Daily matchup)
+                const matchingEntries = historyData.filter((h: any) => h.dateKey === requestedDateKey);
+                const historyEntry = matchingEntries.length > 0
+                    ? matchingEntries.reduce((best: any, curr: any) =>
+                        (curr.votes1 + curr.votes2) > (best.votes1 + best.votes2) ? curr : best
+                    )
+                    : null;
 
                 if (!historyEntry) {
                     return NextResponse.json({
