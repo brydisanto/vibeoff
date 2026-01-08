@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
             >
                 {/* VIBE OFF! Title */}
                 <span style={{
-                    fontSize: 56,
+                    fontSize: 72,
                     color: '#FFE048',
                     fontFamily: 'Brice Bold',
                     fontStyle: 'italic',
