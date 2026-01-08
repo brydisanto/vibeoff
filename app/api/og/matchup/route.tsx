@@ -39,52 +39,74 @@ export async function GET(request: NextRequest) {
             <div
                 style={{
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     width: '100%',
                     height: '100%',
                     background: '#0a0a0a',
                     fontFamily: 'Brice Bold',
-                    gap: 50,
+                    gap: 20,
                 }}
             >
-                {/* Left Character - Bigger */}
-                <img
-                    src={img1Url}
-                    width={420}
-                    height={420}
-                    style={{
-                        borderRadius: 28,
-                        border: '6px solid #FFE048',
-                        objectFit: 'cover',
-                        boxShadow: '0 0 40px rgba(255, 224, 72, 0.3)',
-                    }}
-                />
-
-                {/* VS - Brice Bold italic gold */}
+                {/* VIBE OFF! Title */}
                 <span style={{
-                    fontSize: 80,
+                    fontSize: 56,
                     color: '#FFE048',
                     fontFamily: 'Brice Bold',
                     fontStyle: 'italic',
-                    textShadow: '3px 3px 0px rgba(0,0,0,0.5), 0 0 20px rgba(255, 224, 72, 0.4)',
-                    letterSpacing: '-2px',
+                    textShadow: '3px 3px 0px rgba(0,0,0,0.5)',
+                    letterSpacing: '-1px',
+                    marginBottom: 10,
                 }}>
-                    VS
+                    VIBE OFF!
                 </span>
 
-                {/* Right Character - Bigger */}
-                <img
-                    src={img2Url}
-                    width={420}
-                    height={420}
+                {/* Images Row */}
+                <div
                     style={{
-                        borderRadius: 28,
-                        border: '6px solid #FFE048',
-                        objectFit: 'cover',
-                        boxShadow: '0 0 40px rgba(255, 224, 72, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 50,
                     }}
-                />
+                >
+                    {/* Left Character - No border */}
+                    <img
+                        src={img1Url}
+                        width={380}
+                        height={380}
+                        style={{
+                            borderRadius: 24,
+                            objectFit: 'cover',
+                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                        }}
+                    />
+
+                    {/* VS - Brice Bold italic gold */}
+                    <span style={{
+                        fontSize: 72,
+                        color: '#FFE048',
+                        fontFamily: 'Brice Bold',
+                        fontStyle: 'italic',
+                        textShadow: '3px 3px 0px rgba(0,0,0,0.5), 0 0 20px rgba(255, 224, 72, 0.4)',
+                        letterSpacing: '-2px',
+                    }}>
+                        VS
+                    </span>
+
+                    {/* Right Character - No border */}
+                    <img
+                        src={img2Url}
+                        width={380}
+                        height={380}
+                        style={{
+                            borderRadius: 24,
+                            objectFit: 'cover',
+                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                        }}
+                    />
+                </div>
             </div>
         ),
         {
