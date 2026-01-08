@@ -1,10 +1,8 @@
 import { ImageResponse } from 'next/og';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { INITIAL_CHARACTERS } from '@/lib/data';
 
 export const runtime = 'edge';
-
-// Increase timeout for external image fetching
 export const maxDuration = 30;
 
 export async function GET(request: NextRequest) {
@@ -31,7 +29,7 @@ export async function GET(request: NextRequest) {
     const img1Url = char1.url;
     const img2Url = char2.url;
 
-    const imageResponse = new ImageResponse(
+    return new ImageResponse(
         (
             <div
                 style={{
@@ -40,43 +38,46 @@ export async function GET(request: NextRequest) {
                     justifyContent: 'center',
                     width: '100%',
                     height: '100%',
-                    background: '#000000',
+                    background: '#0a0a0a',
                     fontFamily: 'sans-serif',
-                    gap: 60,
+                    gap: 50,
                 }}
             >
-                {/* Left Character */}
+                {/* Left Character - Bigger */}
                 <img
                     src={img1Url}
-                    width={340}
-                    height={340}
+                    width={420}
+                    height={420}
                     style={{
-                        borderRadius: 24,
-                        border: '5px solid #FFE048',
+                        borderRadius: 28,
+                        border: '6px solid #FFE048',
                         objectFit: 'cover',
+                        boxShadow: '0 0 40px rgba(255, 224, 72, 0.3)',
                     }}
                 />
 
-                {/* VS - matching homepage italic gold style */}
+                {/* VS - matching homepage: italic, bold, gold with shadow */}
                 <span style={{
-                    fontSize: 72,
+                    fontSize: 80,
                     color: '#FFE048',
-                    fontWeight: 'bold',
+                    fontWeight: 900,
                     fontStyle: 'italic',
-                    textShadow: '0 0 30px rgba(255, 224, 72, 0.5)',
+                    textShadow: '3px 3px 0px rgba(0,0,0,0.5), 0 0 20px rgba(255, 224, 72, 0.4)',
+                    letterSpacing: '-2px',
                 }}>
                     VS
                 </span>
 
-                {/* Right Character */}
+                {/* Right Character - Bigger */}
                 <img
                     src={img2Url}
-                    width={340}
-                    height={340}
+                    width={420}
+                    height={420}
                     style={{
-                        borderRadius: 24,
-                        border: '5px solid #FFE048',
+                        borderRadius: 28,
+                        border: '6px solid #FFE048',
                         objectFit: 'cover',
+                        boxShadow: '0 0 40px rgba(255, 224, 72, 0.3)',
                     }}
                 />
             </div>
@@ -89,6 +90,4 @@ export async function GET(request: NextRequest) {
             },
         }
     );
-
-    return imageResponse;
 }

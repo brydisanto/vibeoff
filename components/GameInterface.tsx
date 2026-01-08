@@ -19,10 +19,10 @@ export default function GameInterface() {
         if (!matchup) return;
         const char1 = matchup[0];
         const char2 = matchup[1];
-        const tweetText = `🔥 Who has the better vibes?\n\n${char1.name} vs ${char2.name}\n\nCast your vote now on VIBE OFF!\n\n@GoodVibesClub`;
+        const tweetText = `LEFT OR RIGHT!? ⬅️➡️\n\nGVC #${char1.id} vs. GVC #${char2.id}\n\nIt's time for a VIBE OFF! 👀🤙🔥\n\n(Built by @brydisanto for @GoodVibesClub)`;
         const shareUrl = `https://vibeoff.xyz/share?ids=${char1.id},${char2.id}`;
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(twitterUrl, '_blank', 'width=550,height=420');
+        window.open(twitterUrl, '_blank', 'width=550,height=520');
     };
 
     // Check if daily vote is available
