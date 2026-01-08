@@ -182,10 +182,9 @@ export async function POST(request: NextRequest) {
                 dateKey = currentMatchup.dateKey;
                 matchupStatus = 'CURRENT MATCHUP';
             } else {
-                // Fetch historical matchup from history
-                const historyData = await kv.lrange('daily:history', 0, 100) as string[];
+                // Fetch historical matchup from history (stored as zset)
+                const historyData = await kv.zrange('daily:history', 0, 100) as any[];
                 const historyEntry = historyData
-                    .map(entry => typeof entry === 'string' ? JSON.parse(entry) : entry)
                     .find((h: any) => h.dateKey === requestedDateKey);
 
                 if (!historyEntry) {
