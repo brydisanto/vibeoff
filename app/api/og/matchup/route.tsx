@@ -1,8 +1,11 @@
 import { ImageResponse } from 'next/og';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { INITIAL_CHARACTERS } from '@/lib/data';
 
 export const runtime = 'edge';
+
+// Increase timeout for external image fetching
+export const maxDuration = 30;
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
     const img1Url = char1.url;
     const img2Url = char2.url;
 
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
         (
             <div
                 style={{
@@ -38,7 +41,6 @@ export async function GET(request: NextRequest) {
                     width: '100%',
                     height: '100%',
                     background: '#000000',
-                    backgroundImage: 'url(data:image/svg+xml,' + encodeURIComponent('<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="none"/><path d="M0 40L40 0M0 0L40 40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>') + ')',
                     fontFamily: 'sans-serif',
                     gap: 60,
                 }}
@@ -82,6 +84,11 @@ export async function GET(request: NextRequest) {
         {
             width: 1200,
             height: 630,
+            headers: {
+                'Cache-Control': 'public, max-age=31536000, immutable',
+            },
         }
     );
+
+    return imageResponse;
 }
