@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
         return new Response('Character not found', { status: 404 });
     }
 
-    // Use the url property from Character interface (already full URL)
     const img1Url = char1.url;
     const img2Url = char2.url;
 
@@ -34,114 +33,50 @@ export async function GET(request: NextRequest) {
             <div
                 style={{
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     width: '100%',
                     height: '100%',
-                    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+                    background: '#000000',
+                    backgroundImage: 'url(data:image/svg+xml,' + encodeURIComponent('<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="none"/><path d="M0 40L40 0M0 0L40 40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>') + ')',
                     fontFamily: 'sans-serif',
+                    gap: 60,
                 }}
             >
-                {/* Title */}
-                <div
+                {/* Left Character */}
+                <img
+                    src={img1Url}
+                    width={340}
+                    height={340}
                     style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: 30,
+                        borderRadius: 24,
+                        border: '5px solid #FFE048',
+                        objectFit: 'cover',
                     }}
-                >
-                    <span style={{ fontSize: 48, color: '#FFE048', fontWeight: 'bold' }}>
-                        🔥 VIBE OFF! 🔥
-                    </span>
-                </div>
+                />
 
-                {/* Images Container */}
-                <div
+                {/* VS - matching homepage italic gold style */}
+                <span style={{
+                    fontSize: 72,
+                    color: '#FFE048',
+                    fontWeight: 'bold',
+                    fontStyle: 'italic',
+                    textShadow: '0 0 30px rgba(255, 224, 72, 0.5)',
+                }}>
+                    VS
+                </span>
+
+                {/* Right Character */}
+                <img
+                    src={img2Url}
+                    width={340}
+                    height={340}
                     style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 40,
+                        borderRadius: 24,
+                        border: '5px solid #FFE048',
+                        objectFit: 'cover',
                     }}
-                >
-                    {/* Left Character */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <img
-                            src={img1Url}
-                            width={280}
-                            height={280}
-                            style={{
-                                borderRadius: 20,
-                                border: '4px solid #FFE048',
-                            }}
-                        />
-                        <span style={{
-                            marginTop: 16,
-                            fontSize: 28,
-                            color: '#fff',
-                            fontWeight: 'bold',
-                        }}>
-                            {char1.name}
-                        </span>
-                    </div>
-
-                    {/* VS */}
-                    <span style={{
-                        fontSize: 64,
-                        color: '#FFE048',
-                        fontWeight: 'bold',
-                        fontStyle: 'italic',
-                    }}>
-                        VS
-                    </span>
-
-                    {/* Right Character */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <img
-                            src={img2Url}
-                            width={280}
-                            height={280}
-                            style={{
-                                borderRadius: 20,
-                                border: '4px solid #FFE048',
-                            }}
-                        />
-                        <span style={{
-                            marginTop: 16,
-                            fontSize: 28,
-                            color: '#fff',
-                            fontWeight: 'bold',
-                        }}>
-                            {char2.name}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: 40,
-                    }}
-                >
-                    <span style={{ fontSize: 24, color: '#888' }}>
-                        vibeoff.xyz • @GoodVibesClub
-                    </span>
-                </div>
+                />
             </div>
         ),
         {
