@@ -26,6 +26,11 @@ export async function GET(request: NextRequest) {
         return new Response('Character not found', { status: 404 });
     }
 
+    // Load Brice Bold font for VS text
+    const fontData = await fetch(
+        new URL('/fonts/Brice-Bold.otf', request.url)
+    ).then(res => res.arrayBuffer());
+
     const img1Url = char1.url;
     const img2Url = char2.url;
 
@@ -39,7 +44,7 @@ export async function GET(request: NextRequest) {
                     width: '100%',
                     height: '100%',
                     background: '#0a0a0a',
-                    fontFamily: 'sans-serif',
+                    fontFamily: 'Brice Bold',
                     gap: 50,
                 }}
             >
@@ -56,11 +61,11 @@ export async function GET(request: NextRequest) {
                     }}
                 />
 
-                {/* VS - matching homepage: italic, bold, gold with shadow */}
+                {/* VS - Brice Bold italic gold */}
                 <span style={{
                     fontSize: 80,
                     color: '#FFE048',
-                    fontWeight: 900,
+                    fontFamily: 'Brice Bold',
                     fontStyle: 'italic',
                     textShadow: '3px 3px 0px rgba(0,0,0,0.5), 0 0 20px rgba(255, 224, 72, 0.4)',
                     letterSpacing: '-2px',
@@ -85,6 +90,14 @@ export async function GET(request: NextRequest) {
         {
             width: 1200,
             height: 630,
+            fonts: [
+                {
+                    name: 'Brice Bold',
+                    data: fontData,
+                    style: 'italic',
+                    weight: 700,
+                },
+            ],
             headers: {
                 'Cache-Control': 'public, max-age=31536000, immutable',
             },
