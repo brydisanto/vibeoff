@@ -14,6 +14,17 @@ export default function GameInterface() {
     const [dailyVoteAvailable, setDailyVoteAvailable] = useState(false);
     const [walletConnected, setWalletConnected] = useState(false);
 
+    // Handle Twitter/X share with image
+    const handleShare = () => {
+        if (!matchup) return;
+        const char1 = matchup[0];
+        const char2 = matchup[1];
+        const tweetText = `🔥 Who has the better vibes?\n\n${char1.name} vs ${char2.name}\n\nCast your vote now on VIBE OFF!\n\n@GoodVibesClub`;
+        const shareUrl = `https://vibeoff.xyz/share?ids=${char1.id},${char2.id}`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, '_blank', 'width=550,height=420');
+    };
+
     // Check if daily vote is available
     useEffect(() => {
         fetch('/api/daily')
@@ -249,6 +260,21 @@ export default function GameInterface() {
                                         />
                                     </motion.div>
                                 </div>
+
+                                {/* Twitter/X Share Button - Below Cards */}
+                                <motion.button
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    onClick={handleShare}
+                                    className="mt-6 md:mt-8 px-6 py-3 rounded-full bg-black text-white font-bold text-sm uppercase tracking-wider hover:bg-[#1a1a1a] transition-all flex items-center gap-2 border border-white/30 hover:border-white/50 shadow-lg"
+                                    title="Share this matchup on X/Twitter"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                    </svg>
+                                    Share This Matchup
+                                </motion.button>
 
                                 {/* Footer - Hide keyboard hint on mobile */}
                                 <p className="hidden md:block text-gray-500 mt-12 text-sm font-mundial">
