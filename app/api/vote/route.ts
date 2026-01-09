@@ -84,6 +84,36 @@ export async function POST(request: Request) {
         // Loser: reset streak to 0
         await kv.hset(`stats:alltime:${loserId}`, { winStreak: 0 });
 
+        // --- Elo Rating System (tracked but not displayed publicly yet) ---
+        // Standard Elo formula with K-factor of 32
+        const K = 32;
+        const BASE_ELO = 1000;
+
+        // Get current Elo ratings (default to 1000 if not set)
+        const [winnerEloRaw, loserEloRaw] = await Promise.all([
+            kv.hget(`stats:alltime:${winnerId}`, 'elo'),
+            kv.hget(`stats:alltime:${loserId}`, 'elo')
+        ]);
+
+        const winnerElo = typeof winnerEloRaw === 'number' ? winnerEloRaw :
+            typeof winnerEloRaw === 'string' ? parseFloat(winnerEloRaw) : BASE_ELO;
+        const loserElo = typeof loserEloRaw === 'number' ? loserEloRaw :
+            typeof loserEloRaw === 'string' ? parseFloat(loserEloRaw) : BASE_ELO;
+
+        // Calculate expected scores
+        const expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
+        const expectedLoser = 1 / (1 + Math.pow(10, (winnerElo - loserElo) / 400));
+
+        // Update Elo ratings (winner gets 1, loser gets 0)
+        const newWinnerElo = Math.round(winnerElo + K * (1 - expectedWinner));
+        const newLoserElo = Math.round(loserElo + K * (0 - expectedLoser));
+
+        // Store updated Elo ratings
+        await Promise.all([
+            kv.hset(`stats:alltime:${winnerId}`, { elo: newWinnerElo }),
+            kv.hset(`stats:alltime:${loserId}`, { elo: newLoserElo })
+        ]);
+
         // Update Sorted Set for Leaderboard (All Time)
         await kv.zadd('leaderboard:alltime', { score: atWins, member: winnerId });
 
