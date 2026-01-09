@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Character, INITIAL_CHARACTERS } from './data';
 
 const STORAGE_KEY = 'neon_solstice_state_v20';
@@ -33,6 +33,25 @@ export function useGameLogic() {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [matchup, setMatchup] = useState<[Character, Character] | null>(null);
     const [matchupQueue, setMatchupQueue] = useState<[Character, Character][]>([]);
+
+    // Weights for weighted random selection (inverse of match count)
+    const weightsRef = useRef<Record<number, number> | null>(null);
+    const totalWeightRef = useRef<number>(0);
+
+    // Fetch weights on mount
+    useEffect(() => {
+        fetch('/api/stats/weights')
+            .then(res => res.json())
+            .then(data => {
+                if (data.weights) {
+                    weightsRef.current = data.weights;
+                    // Pre-calculate total weight
+                    totalWeightRef.current = (Object.values(data.weights) as number[]).reduce((sum, w) => sum + w, 0);
+                    console.log('[GameLogic] Loaded weights for', Object.keys(data.weights).length, 'GVCs, total weight:', totalWeightRef.current.toFixed(2));
+                }
+            })
+            .catch(e => console.error('Failed to fetch weights:', e));
+    }, []);
 
     // Cleanup old versions to free up space
     useEffect(() => {
@@ -128,12 +147,44 @@ export function useGameLogic() {
         });
     };
 
+    // Weighted random selection - characters with fewer matches appear more often
+    const selectWeightedRandom = (chars: Character[], excludeId?: number): Character => {
+        const weights = weightsRef.current;
+
+        // Fallback to uniform random if weights not loaded
+        if (!weights || totalWeightRef.current === 0) {
+            const filtered = excludeId ? chars.filter(c => c.id !== excludeId) : chars;
+            return filtered[Math.floor(Math.random() * filtered.length)];
+        }
+
+        // Adjust for excluded character
+        let availableWeight = totalWeightRef.current;
+        if (excludeId && weights[excludeId]) {
+            availableWeight -= weights[excludeId];
+        }
+
+        let randomValue = Math.random() * availableWeight;
+        let cumulative = 0;
+
+        for (const char of chars) {
+            if (excludeId && char.id === excludeId) continue;
+            const weight = weights[char.id] || (1 / 50); // Default weight if missing
+            cumulative += weight;
+            if (randomValue <= cumulative) {
+                return char;
+            }
+        }
+
+        // Fallback to last character (shouldn't happen)
+        return chars[chars.length - 1];
+    };
+
     const getNewPair = (chars: Character[]): [Character, Character] => {
-        const c1 = chars[Math.floor(Math.random() * chars.length)];
-        let c2 = chars[Math.floor(Math.random() * chars.length)];
-        // Ensure different ID and URL
-        while (c1.id === c2.id || c1.url === c2.url) {
-            c2 = chars[Math.floor(Math.random() * chars.length)];
+        const c1 = selectWeightedRandom(chars);
+        let c2 = selectWeightedRandom(chars, c1.id);
+        // Ensure different URL as well
+        while (c1.url === c2.url) {
+            c2 = selectWeightedRandom(chars, c1.id);
         }
         return [c1, c2];
     };
