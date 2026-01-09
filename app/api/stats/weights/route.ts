@@ -45,8 +45,9 @@ export async function GET() {
 
             for (let i = 0; i < results.length; i++) {
                 const id = start + i;
-                const matches = typeof results[i] === 'number' ? results[i] :
-                    typeof results[i] === 'string' ? parseInt(results[i]) : 0;
+                const result = results[i];
+                const matches = typeof result === 'number' ? result :
+                    typeof result === 'string' ? parseInt(result as string) : 0;
                 matchCounts[id] = matches || 0;
             }
         }
