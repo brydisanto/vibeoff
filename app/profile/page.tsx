@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { ArrowLeft, Flame, Swords, Percent, Trophy, Users, Plus, X, Check } from 'lucide-react';
+import { ArrowLeft, Flame, Swords, Percent, Trophy } from 'lucide-react';
 import { INITIAL_CHARACTERS } from '@/lib/data';
 
 interface GvcStats {
@@ -35,13 +35,6 @@ interface ActivityItem {
 
 // Sample activity removed
 
-interface DuoInfo {
-    id: string;
-    gvc1: { id: number; name: string; url: string };
-    gvc2: { id: number; name: string; url: string };
-    stats: { wins: number; losses: number; matches: number; elo: number };
-}
-
 
 export default function ProfilePage() {
     const { address, isConnected } = useAccount();
@@ -52,14 +45,6 @@ export default function ProfilePage() {
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [collectorRank, setCollectorRank] = useState<number | null>(null);
     const prevActivityRef = useRef<string[]>([]);
-
-    // Duo state
-    const [myDuos, setMyDuos] = useState<DuoInfo[]>([]);
-    const [showDuoModal, setShowDuoModal] = useState(false);
-    const [selectedForDuo, setSelectedForDuo] = useState<number[]>([]);
-    const [duoSubmitting, setDuoSubmitting] = useState(false);
-    const [duoError, setDuoError] = useState<string | null>(null);
-    const [gvcsInDuos, setGvcsInDuos] = useState<Set<number>>(new Set());
 
     // Request notification permission
     const enableNotifications = async () => {
@@ -112,29 +97,6 @@ export default function ProfilePage() {
                 setError('Failed to load your GVCs');
             })
             .finally(() => setLoading(false));
-    }, [address]);
-
-    // Fetch user's Duos
-    useEffect(() => {
-        if (!address) {
-            setMyDuos([]);
-            return;
-        }
-
-        fetch(`/api/duos/my-duos?wallet=${address}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.duos) {
-                    setMyDuos(data.duos);
-                    const inDuos = new Set<number>();
-                    data.duos.forEach((d: DuoInfo) => {
-                        inDuos.add(d.gvc1.id);
-                        inDuos.add(d.gvc2.id);
-                    });
-                    setGvcsInDuos(inDuos);
-                }
-            })
-            .catch(err => console.error('Failed to fetch Duos:', err));
     }, [address]);
 
     // Fetch activity feed for user's GVCs
@@ -197,56 +159,6 @@ export default function ProfilePage() {
 
     // Check if activity item involves user's GVC
     const isUserGvc = (id: number) => gvcs.some(g => g.id === id);
-
-    // Toggle GVC selection for Duo creation
-    const toggleDuoSelection = (id: number) => {
-        if (gvcsInDuos.has(id)) return;
-        setSelectedForDuo(prev => {
-            if (prev.includes(id)) return prev.filter(x => x !== id);
-            if (prev.length < 2) return [...prev, id];
-            return prev;
-        });
-    };
-
-    // Submit a new Duo
-    const submitDuo = async () => {
-        if (selectedForDuo.length !== 2 || !address) return;
-        setDuoSubmitting(true);
-        setDuoError(null);
-        try {
-            const res = await fetch('/api/duos/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    gvc1Id: selectedForDuo[0],
-                    gvc2Id: selectedForDuo[1],
-                    walletAddress: address
-                })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                const duosRes = await fetch(`/api/duos/my-duos?wallet=${address}`);
-                const duosData = await duosRes.json();
-                if (duosData.duos) {
-                    setMyDuos(duosData.duos);
-                    const inDuos = new Set<number>();
-                    duosData.duos.forEach((d: DuoInfo) => {
-                        inDuos.add(d.gvc1.id);
-                        inDuos.add(d.gvc2.id);
-                    });
-                    setGvcsInDuos(inDuos);
-                }
-                setShowDuoModal(false);
-                setSelectedForDuo([]);
-            } else {
-                setDuoError(data.error || 'Failed to create Duo');
-            }
-        } catch {
-            setDuoError('Failed to create Duo');
-        } finally {
-            setDuoSubmitting(false);
-        }
-    };
 
     // Collector Stats
     const totalWins = gvcs.reduce((acc, g) => acc + (g.allTime.wins || 0), 0);
@@ -325,50 +237,6 @@ export default function ProfilePage() {
                         </motion.div>
                     )}
                 </div>
-
-                {/* My Duos Section */}
-                {isConnected && gvcs.length > 0 && (
-                    <div className="mb-12">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <Users className="text-[#FFE048]" size={24} />
-                                <h2 className="text-xl font-cooper font-bold text-gray-400">MY DUOS ({myDuos.length})</h2>
-                            </div>
-                            <div className="flex gap-3">
-                                <Link href="/duos" className="px-4 py-2 bg-[#FFE048] text-black rounded-lg font-bold text-sm hover:bg-[#FFE048]/90 transition-colors">
-                                    PLAY DUOS →
-                                </Link>
-                                <button onClick={() => setShowDuoModal(true)} className="px-4 py-2 bg-white/10 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors flex items-center gap-2">
-                                    <Plus size={16} /> CREATE DUO
-                                </button>
-                            </div>
-                        </div>
-                        {myDuos.length === 0 ? (
-                            <div className="bg-zinc-900/50 rounded-xl p-6 text-center border border-white/10">
-                                <p className="text-gray-500 mb-2">No Duos created yet</p>
-                                <p className="text-gray-600 text-sm">Select 2 of your GVCs to enter the DUOS competition!</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {myDuos.map(duo => (
-                                    <div key={duo.id} className="bg-zinc-900/50 rounded-xl p-4 border border-white/10 hover:border-[#FFE048]/30 transition-colors">
-                                        <div className="flex gap-3 mb-3">
-                                            <img src={duo.gvc1.url} alt={duo.gvc1.name} className="w-16 h-16 rounded-lg object-cover" />
-                                            <div className="flex items-center text-gray-500 font-bold">+</div>
-                                            <img src={duo.gvc2.url} alt={duo.gvc2.name} className="w-16 h-16 rounded-lg object-cover" />
-                                        </div>
-                                        <div className="text-sm text-gray-400">#{duo.gvc1.id} + #{duo.gvc2.id}</div>
-                                        <div className="flex gap-4 mt-2 text-sm">
-                                            <span className="text-green-400">{duo.stats.wins}W</span>
-                                            <span className="text-red-400">{duo.stats.losses}L</span>
-                                            <span className="text-gray-500">Elo: {duo.stats.elo}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
 
                 {/* Not Connected State */}
                 {/* Not Connected State */}
@@ -553,99 +421,6 @@ export default function ProfilePage() {
                     </div>
                 )}
             </div>
-
-            {/* Duo Creation Modal */}
-            <AnimatePresence>
-                {showDuoModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                        onClick={() => setShowDuoModal(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-zinc-900 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-white/20"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-cooper font-bold text-[#FFE048]">Create a Duo</h2>
-                                <button onClick={() => setShowDuoModal(false)} className="text-gray-400 hover:text-white">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            <p className="text-gray-400 mb-6">Select 2 GVCs to pair together for DUOS mode.</p>
-                            {duoError && (
-                                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-red-400 text-sm">{duoError}</div>
-                            )}
-                            <div className="flex items-center justify-center gap-4 mb-6 p-4 bg-black/30 rounded-xl">
-                                {selectedForDuo.length > 0 ? (
-                                    <>
-                                        {selectedForDuo.map((id) => {
-                                            const gvc = gvcs.find(g => g.id === id);
-                                            return (
-                                                <div key={id} className="relative">
-                                                    <img src={gvc?.url} alt={gvc?.name} className="w-20 h-20 rounded-xl object-cover border-2 border-[#FFE048]" />
-                                                    <div className="text-center text-xs text-gray-400 mt-1">#{id}</div>
-                                                </div>
-                                            );
-                                        })}
-                                        {selectedForDuo.length === 1 && (
-                                            <>
-                                                <Plus className="text-gray-500" size={24} />
-                                                <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center text-gray-600">?</div>
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <p className="text-gray-500">Select 2 GVCs below</p>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-4 md:grid-cols-6 gap-3 mb-6">
-                                {gvcs.map(gvc => {
-                                    const isInDuo = gvcsInDuos.has(gvc.id);
-                                    const isSelected = selectedForDuo.includes(gvc.id);
-                                    return (
-                                        <button
-                                            key={gvc.id}
-                                            onClick={() => toggleDuoSelection(gvc.id)}
-                                            disabled={isInDuo}
-                                            className={`relative rounded-xl overflow-hidden border-2 transition-all ${isInDuo ? 'opacity-40 cursor-not-allowed border-gray-700' :
-                                                    isSelected ? 'border-[#FFE048] scale-105' :
-                                                        'border-transparent hover:border-white/30'
-                                                }`}
-                                        >
-                                            <img src={gvc.url} alt={gvc.name} className="w-full aspect-square object-cover" />
-                                            {isSelected && (
-                                                <div className="absolute inset-0 bg-[#FFE048]/20 flex items-center justify-center">
-                                                    <Check className="text-[#FFE048]" size={32} />
-                                                </div>
-                                            )}
-                                            {isInDuo && (
-                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                                    <span className="text-[10px] text-gray-400">IN DUO</span>
-                                                </div>
-                                            )}
-                                            <div className="absolute bottom-1 left-1 text-[10px] bg-black/70 px-1 rounded">#{gvc.id}</div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            <button
-                                onClick={submitDuo}
-                                disabled={selectedForDuo.length !== 2 || duoSubmitting}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${selectedForDuo.length === 2 ? 'bg-[#FFE048] text-black hover:bg-[#FFE048]/90' : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                    }`}
-                            >
-                                {duoSubmitting ? 'Creating...' : selectedForDuo.length === 2 ? 'CREATE DUO' : `Select ${2 - selectedForDuo.length} more`}
-                            </button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </main>
     );
 }
