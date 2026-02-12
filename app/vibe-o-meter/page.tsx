@@ -65,8 +65,9 @@ export default function VibeOmnimeterPage() {
             <div className="w-full flex justify-start md:absolute md:top-8 md:left-8 z-20 mb-8 md:mb-0">
                 <Link
                     href="/"
-                    className="bg-[#1a1a1a] text-gray-300 hover:text-white hover:bg-[#252525] transition-colors border border-white/10 px-6 py-3 rounded-lg font-bold uppercase text-sm tracking-wide"
+                    className="px-4 md:px-6 py-3 md:py-4 bg-[#111] text-gray-400 hover:text-white hover:bg-[#222] rounded-lg font-bold uppercase text-[11px] md:text-sm tracking-wide transition-all border border-transparent hover:border-white/20 flex items-center gap-2"
                 >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
                     BACK
                 </Link>
             </div>

@@ -56,8 +56,9 @@ export default function GvcDetailPage() {
                 <div className="flex justify-between items-center mb-12">
                     <Link
                         href="/"
-                        className="bg-[#1a1a1a] text-gray-300 hover:text-white hover:bg-[#252525] transition-colors border border-white/10 px-6 py-3 rounded-lg font-bold uppercase text-xs md:text-sm tracking-wide"
+                        className="px-4 md:px-6 py-3 md:py-4 bg-[#111] text-gray-400 hover:text-white hover:bg-[#222] rounded-lg font-bold uppercase text-[11px] md:text-sm tracking-wide transition-all border border-transparent hover:border-white/20 flex items-center gap-2"
                     >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
                         BACK
                     </Link>
                     <Link
@@ -78,7 +79,7 @@ export default function GvcDetailPage() {
                             alt={character.name}
                             className="relative w-full h-full object-cover rounded-3xl border-4 border-white/10 shadow-2xl"
                         />
-                        <div className="absolute -bottom-4 -right-4 bg-black border border-white/20 text-white px-4 py-1 rounded-full font-mono text-sm">
+                        <div className="absolute -bottom-4 -right-4 bg-black border border-white/20 text-white px-4 py-1 rounded-full font-mundial text-sm">
                             #{character.id}
                         </div>
                     </div>
@@ -86,7 +87,7 @@ export default function GvcDetailPage() {
                     {/* Info */}
                     <div className="flex-1 w-full text-center md:text-left">
                         <h1 className="text-4xl md:text-6xl font-display text-white mb-2">{character.name}</h1>
-                        <div className="text-gray-400 font-mono text-sm mb-8 break-all">
+                        <div className="text-gray-400 font-mundial text-sm mb-8 break-all">
                             OWNER: <a
                                 href={`https://opensea.io/assets/ethereum/0xB8Ea78fcaCEf50d41375E44E6814ebbA36Bb33c4/${character.id}`}
                                 target="_blank"
@@ -97,25 +98,42 @@ export default function GvcDetailPage() {
                             </a>
                         </div>
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-[#111] p-4 rounded-xl border border-white/10">
-                                <div className="text-gray-500 text-xs font-bold uppercase mb-1">Rank</div>
-                                <div className="text-2xl md:text-3xl font-display text-white">#{stats.rank}</div>
-                            </div>
-                            <div className="bg-[#111] p-4 rounded-xl border border-white/10">
-                                <div className="text-gray-500 text-xs font-bold uppercase mb-1">Win Rate</div>
-                                <div className={`text-2xl md:text-3xl font-display ${winRate >= 50 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {winRate}%
+                        {/* Stats - Hero +/- Layout */}
+                        <div className="grid grid-cols-[1fr_2fr] gap-4">
+                            {/* Hero +/- */}
+                            <div className="relative overflow-hidden bg-gradient-to-br from-[#0a1a0a] to-[#111] border border-green-500/20 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(74,222,128,0.05)_0%,transparent_60%)]" />
+                                <div className="relative z-10">
+                                    <div className="text-green-400 text-[0.65rem] font-bold uppercase tracking-[3px] mb-2">Plus / Minus</div>
+                                    <div className={`text-5xl font-display font-bold ${stats.allTime.wins - stats.allTime.losses > 0 ? 'text-green-400' : stats.allTime.wins - stats.allTime.losses < 0 ? 'text-red-400' : 'text-gray-400'}`} style={{ textShadow: '0 0 30px rgba(74,222,128,0.3)' }}>
+                                        {stats.allTime.wins - stats.allTime.losses > 0 ? '+' : ''}{stats.allTime.wins - stats.allTime.losses}
+                                    </div>
+                                    <div className="text-gray-600 text-xs font-mundial mt-2">{stats.allTime.wins}W — {stats.allTime.losses}L</div>
                                 </div>
                             </div>
-                            <div className="bg-[#111] p-4 rounded-xl border border-white/10">
-                                <div className="text-gray-500 text-xs font-bold uppercase mb-1">Wins</div>
-                                <div className="text-2xl md:text-3xl font-display text-gvc-gold">{stats.allTime.wins}</div>
-                            </div>
-                            <div className="bg-[#111] p-4 rounded-xl border border-white/10">
-                                <div className="text-gray-500 text-xs font-bold uppercase mb-1">Matches</div>
-                                <div className="text-2xl md:text-3xl font-display text-white">{stats.allTime.matches}</div>
+                            {/* Side Stats */}
+                            <div className="grid grid-cols-2 grid-rows-3 gap-2">
+                                {/* Rank - spans full width */}
+                                <div className="col-span-2 bg-gradient-to-r from-[#1a1500] to-[#111] border border-yellow-500/15 rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div className="text-gray-500 text-[0.6rem] font-bold uppercase tracking-wider">Rank</div>
+                                    <div className="text-xl font-display text-gvc-gold">#{stats.rank}</div>
+                                </div>
+                                <div className="bg-[#111] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div className="text-gray-600 text-[0.6rem] font-bold uppercase tracking-wider">Win Rate</div>
+                                    <div className={`text-xl font-display ${winRate >= 50 ? 'text-green-400' : 'text-red-400'}`}>{winRate}%</div>
+                                </div>
+                                <div className="bg-[#111] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div className="text-gray-600 text-[0.6rem] font-bold uppercase tracking-wider">Matches</div>
+                                    <div className="text-xl font-display text-white">{stats.allTime.matches}</div>
+                                </div>
+                                <div className="bg-[#111] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div className="text-gray-600 text-[0.6rem] font-bold uppercase tracking-wider">Wins</div>
+                                    <div className="text-xl font-display text-gvc-gold">{stats.allTime.wins}</div>
+                                </div>
+                                <div className="bg-[#111] border border-white/[0.06] rounded-xl px-4 py-3 flex items-center justify-between">
+                                    <div className="text-gray-600 text-[0.6rem] font-bold uppercase tracking-wider">Losses</div>
+                                    <div className="text-xl font-display text-gray-400">{stats.allTime.losses}</div>
+                                </div>
                             </div>
                         </div>
                     </div>

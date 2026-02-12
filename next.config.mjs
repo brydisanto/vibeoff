@@ -20,6 +20,10 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'i2c.seadn.io', // Alternate OpenSea CDN
+            },
+            {
+                protocol: 'https',
                 hostname: 'cloudflare-ipfs.com',
             },
             {

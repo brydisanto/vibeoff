@@ -16,7 +16,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
     const [leaderboardData, setLeaderboardData] = useState<Character[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'vibes' | 'collectors'>('vibes');
-    const [filter, setFilter] = useState<'all' | 'gold' | 'cosmic' | '1/1' | 'beard' | 'grayscale' | 'hoodie' | 'rainbow' | 'plastic' | 'female' | 'ranger'>('all');
+    const [filter, setFilter] = useState<'all' | 'gold' | 'cosmic' | '1/1' | 'beard' | 'grayscale' | 'hoodie' | 'rainbow' | 'plastic' | 'female' | 'ranger' | 'nvc'>('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -56,6 +56,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                 else if (filter === 'plastic') passesTypeFilter = char.isPlastic;
                 else if (filter === 'female') passesTypeFilter = char.isFemale;
                 else if (filter === 'ranger') passesTypeFilter = char.isRanger;
+                else if (filter === 'nvc') passesTypeFilter = char.isNVC;
 
                 if (!passesTypeFilter) return false;
 
@@ -81,8 +82,10 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
             const statsA = a.allTime;
             const statsB = b.allTime;
 
-            // Primary sort: Wins (Descending)
-            if (statsA.wins !== statsB.wins) return statsB.wins - statsA.wins;
+            // Primary sort: +/- (Wins - Losses) Descending
+            const diffA = statsA.wins - statsA.losses;
+            const diffB = statsB.wins - statsB.losses;
+            if (diffA !== diffB) return diffB - diffA;
 
             // Secondary sort: Win Rate
             const rateA = statsA.matches > 0 ? statsA.wins / statsA.matches : 0;
@@ -90,11 +93,11 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
             if (Math.abs(rateA - rateB) > 0.0001) return rateB - rateA;
 
             // Tertiary sort: ID (Ascending) - STABILITY FIX
-            // This ensures the source list is ALWAYS in the same order.
-            // Without this, the "first found" character for a collector (bestVibe) changes randomly,
-            // causing the Collector Leaderboard to shuffle.
             return a.id - b.id;
         }); // Do not slice yet, we need full list for collector stats
+
+    // Max +/- for gradient bar scaling
+    const maxDiff = sortedChars.length > 0 ? Math.max(1, Math.abs(sortedChars[0].allTime.wins - sortedChars[0].allTime.losses)) : 1;
 
     // Aggregate Collector Stats
     const sortedCollectors = useMemo(() => {
@@ -362,7 +365,8 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                                                     filter === 'plastic' ? 'bg-pink-500 border-pink-500 text-white' :
                                                                         filter === 'female' ? 'bg-fuchsia-500 border-fuchsia-500 text-white' :
                                                                             filter === 'ranger' ? 'bg-green-600 border-green-600 text-white' :
-                                                                                'bg-black border-gray-600 text-gray-400 hover:text-white hover:border-gray-400'
+                                                                                filter === 'nvc' ? 'bg-orange-500 border-orange-500 text-white' :
+                                                                                    'bg-black border-gray-600 text-gray-400 hover:text-white hover:border-gray-400'
                                     }`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -454,6 +458,16 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                         </button>
                                         <button
                                             onClick={() => {
+                                                setFilter('nvc');
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${filter === 'nvc' ? 'bg-orange-500/20 text-orange-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                        >
+                                            <span>NVC</span>
+                                            {filter === 'nvc' && <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />}
+                                        </button>
+                                        <button
+                                            onClick={() => {
                                                 setFilter('plastic');
                                                 setIsFilterOpen(false);
                                             }}
@@ -477,7 +491,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                                 setFilter('ranger');
                                                 setIsFilterOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-between active:bg-white/10 ${filter === 'ranger' ? 'bg-green-600/20 text-green-500' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                            className={`w-full text-left px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${filter === 'ranger' ? 'bg-green-600/20 text-green-500' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                                         >
                                             <span>Rangers</span>
                                             {filter === 'ranger' && <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />}
@@ -541,7 +555,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
             <div className="w-full bg-[#111] border border-white/20 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                 {/* Table Header */}
                 <div className={`grid ${viewMode === 'vibes'
-                    ? 'grid-cols-[24px_32px_1fr_35px_35px_35px_24px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_1.5fr_40px]'
+                    ? 'grid-cols-[24px_32px_1fr_35px_35px_35px_35px_24px] md:grid-cols-[60px_80px_2fr_60px_80px_80px_80px_1.5fr_40px]'
                     : 'grid-cols-[24px_32px_1fr_35px_35px_35px_30px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_80px_60px]'
                     } gap-1 md:gap-4 px-2 md:px-6 py-2 md:py-3 bg-white/5 border-b border-white/10 text-[8px] md:text-xs font-bold text-gray-400 uppercase tracking-wider`}>
 
@@ -551,6 +565,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                             <div className="">GVC</div>
                             <div className="md:hidden"></div>
                             <div className="hidden md:block pr-4">Name</div>
+                            <div className="text-center">+/-</div>
                             <div className="text-center">Wins</div>
                             <div className="text-center text-gray-400">Losses</div>
                             <div className="text-center">Win%</div>
@@ -752,7 +767,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_24px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_1.5fr_40px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors group ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''
+                                        className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_35px_24px] md:grid-cols-[60px_80px_2fr_60px_80px_80px_80px_1.5fr_40px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors group ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''
                                             }`}
                                         onViewportEnter={() => {
                                             if (!realOwners[char.id]) {
@@ -794,6 +809,17 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                             {char.name || 'Unknown'}
                                         </div>
 
+                                        {/* +/- with gradient bar */}
+                                        <div className="relative flex items-center justify-center h-[24px] md:h-[32px] rounded-md overflow-hidden">
+                                            <div
+                                                className={`absolute top-0 left-0 h-full rounded-md ${stats.wins - stats.losses >= 0 ? 'bg-gradient-to-r from-green-500/20 to-transparent' : 'bg-gradient-to-r from-red-500/20 to-transparent'}`}
+                                                style={{ width: `${Math.min(100, (Math.abs(stats.wins - stats.losses) / maxDiff) * 100)}%` }}
+                                            />
+                                            <div className={`relative z-10 font-display text-[10px] md:text-lg font-bold ${stats.wins - stats.losses > 0 ? 'text-green-400' : stats.wins - stats.losses < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                                                {stats.wins - stats.losses > 0 ? '+' : ''}{stats.wins - stats.losses}
+                                            </div>
+                                        </div>
+
                                         {/* Wins */}
                                         <div className="text-center">
                                             <div className="text-gvc-gold font-display text-[10px] md:text-lg leading-tight">{stats.wins} W</div>
@@ -804,7 +830,7 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                             <div className="text-gray-400 font-display text-[10px] md:text-lg leading-tight">{stats.losses} L</div>
                                         </div>
 
-                                        {/* Win Rate - New separate column */}
+                                        {/* Win Rate */}
                                         <div className="text-center">
                                             <div className="text-white font-display text-[10px] md:text-lg">{winRate}%</div>
                                         </div>

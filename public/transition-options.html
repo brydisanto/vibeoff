@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUOS Loading Transitions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --gold: #FFE048; --bg: #000; --card-bg: #1A1A1A; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; padding: 40px 20px; }
+        
+        .demo { max-width: 800px; margin: 0 auto 100px; text-align: center; }
+        .demo h2 { color: var(--gold); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        .demo p { color: #888; font-size: 13px; margin-bottom: 24px; }
+        
+        .matchup-container { 
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr; 
+            gap: 24px; 
+            align-items: center;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+        }
+        
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #000;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+        
+        .card-name {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .vs { color: var(--gold); font-size: 32px; font-style: italic; font-weight: 700; }
+        
+        button {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Option 1: Crossfade */
+        .crossfade .card { transition: opacity 0.4s ease; }
+        .crossfade.loading .card { opacity: 0; }
+        
+        /* Option 2: Slide */
+        .slide .matchup-container { overflow: hidden; }
+        .slide .card { transition: transform 0.5s ease, opacity 0.5s ease; }
+        .slide.loading .card:first-child { transform: translateX(-100%); opacity: 0; }
+        .slide.loading .card:last-child { transform: translateX(100%); opacity: 0; }
+        
+        /* Option 3: Scale & Blur */
+        .blur .card { transition: transform 0.4s ease, filter 0.4s ease, opacity 0.4s ease; }
+        .blur.loading .card { transform: scale(0.95); filter: blur(8px); opacity: 0.5; }
+        
+        /* Option 4: Flip */
+        .flip .card { 
+            transition: transform 0.6s ease;
+            transform-style: preserve-3d;
+        }
+        .flip.loading .card { transform: rotateY(90deg); }
+        
+        /* Option 5: Minimal Spinner */
+        .minimal .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            border-radius: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .minimal.loading .loading-overlay { opacity: 1; }
+        .minimal .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255,224,72,0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .minimal .loading-text {
+            margin-top: 16px;
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* Option 6: Skeleton Shimmer */
+        .shimmer .skeleton-overlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 24px;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .shimmer.loading .skeleton-overlay { opacity: 1; }
+        .shimmer.loading .card { opacity: 0; }
+        .skeleton-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+            overflow: hidden;
+        }
+        .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .skeleton-text {
+            height: 20px;
+            width: 70%;
+            background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        
+        .images-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Option 1: Crossfade -->
+    <div class="demo crossfade" id="opt1">
+        <h2>Option 1: Simple Crossfade</h2>
+        <p>Cards fade out and back in - clean and minimal</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/1500.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/506.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/989.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/2009.jpg" /></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt1')">Preview Transition</button>
+    </div>
+
+    <!-- Option 2: Slide -->
+    <div class="demo slide" id="opt2">
+        <h2>Option 2: Slide Out</h2>
+        <p>Cards slide out to the sides, new cards slide in</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/3813.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/4794.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/2500.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6532.jpg" /></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt2')">Preview Transition</button>
+    </div>
+
+    <!-- Option 3: Blur & Scale -->
+    <div class="demo blur" id="opt3">
+        <h2>Option 3: Blur & Scale</h2>
+        <p>Cards blur and shrink slightly, then clear with new matchup</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/4937.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/2852.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6801.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/572.jpg" /></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt3')">Preview Transition</button>
+    </div>
+
+    <!-- Option 4: Flip -->
+    <div class="demo flip" id="opt4">
+        <h2>Option 4: Card Flip</h2>
+        <p>Cards flip like playing cards</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5401.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/3674.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/1808.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/750.jpg" /></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt4')">Preview Transition</button>
+    </div>
+
+    <!-- Option 5: Minimal Spinner -->
+    <div class="demo minimal" id="opt5">
+        <h2>Option 5: Minimal Overlay</h2>
+        <p>Simple centered spinner with "Loading..." text over the current cards</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6153.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5935.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5569.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6394.jpg" /></div>
+                </div>
+            </div>
+            <div class="loading-overlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading next matchup...</div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt5')">Preview Transition</button>
+    </div>
+
+    <!-- Option 6: Shimmer Skeleton -->
+    <div class="demo shimmer" id="opt6">
+        <h2>Option 6: Shimmer Skeleton</h2>
+        <p>Smooth animated shimmer effect instead of spinners</p>
+        <div class="matchup-container">
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/1500.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/989.jpg" /></div>
+                </div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="card">
+                <div class="images-grid">
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/2009.jpg" /></div>
+                    <div class="card-image"><img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/506.jpg" /></div>
+                </div>
+            </div>
+            <div class="skeleton-overlay">
+                <div class="skeleton-card">
+                    <div class="images-grid">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-image"></div>
+                    </div>
+                    <div class="skeleton-text" style="margin-top: 16px;"></div>
+                </div>
+                <span class="vs" style="opacity: 0.5;">VS</span>
+                <div class="skeleton-card">
+                    <div class="images-grid">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-image"></div>
+                    </div>
+                    <div class="skeleton-text" style="margin-top: 16px;"></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="toggleDemo('opt6')">Preview Transition</button>
+    </div>
+
+    <script>
+        function toggleDemo(id) {
+            const el = document.getElementById(id);
+            el.classList.add('loading');
+            setTimeout(() => {
+                el.classList.remove('loading');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

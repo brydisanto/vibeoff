@@ -36,6 +36,15 @@ const config: Config = {
                 cooper: ['var(--font-brice)', 'serif'],
                 mundial: ['var(--font-mundial)', 'sans-serif'],
             },
+            animation: {
+                shimmer: 'shimmer 1.5s ease-in-out infinite',
+            },
+            keyframes: {
+                shimmer: {
+                    '0%': { backgroundPosition: '200% 0' },
+                    '100%': { backgroundPosition: '-200% 0' },
+                },
+            },
         },
     },
     plugins: [],

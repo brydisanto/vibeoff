@@ -182,9 +182,17 @@ export default function GameInterface() {
                         </a>
                         <a
                             href="/hall-of-fame"
-                            className="px-4 md:px-6 py-3 md:py-4 rounded-lg bg-[#1a1a1a] text-gray-300 hover:text-gvc-gold hover:bg-[#252525] transition-all font-bold text-[11px] md:text-sm uppercase tracking-wider border border-transparent hover:border-gvc-gold/30 flex items-center"
+                            className="px-4 md:px-6 py-3 md:py-4 rounded-lg bg-[#1a1a1a] text-gray-300 hover:text-gvc-gold hover:bg-[#252525] transition-all font-bold text-[11px] md:text-sm uppercase tracking-wider border border-transparent hover:border-gvc-gold/30 flex items-center justify-center"
+                            title="Hall of Vibes"
                         >
-                            Hall of Vibes
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                                <path d="M4 22h16" />
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                            </svg>
                         </a>
                         <button
                             onClick={() => setShowLeaderboard(!showLeaderboard)}
@@ -276,12 +284,26 @@ export default function GameInterface() {
                                     Share This Matchup
                                 </motion.button>
 
+                                {/* Mode Toggle Ribbon */}
+                                <div className="flex items-center gap-6 mt-6 md:mt-8">
+                                    <span className="font-extrabold font-mundial text-sm md:text-base uppercase tracking-widest text-white">
+                                        1v1 Mode
+                                    </span>
+                                    <span className="w-0.5 h-6 bg-[#333]"></span>
+                                    <a
+                                        href="/duos"
+                                        className="font-extrabold font-mundial text-sm md:text-base uppercase tracking-widest text-[#333] hover:text-[#666] transition-all"
+                                    >
+                                        2v2 Mode
+                                    </a>
+                                </div>
+
                                 {/* Footer - Hide keyboard hint on mobile */}
                                 <p className="hidden md:block text-gray-500 mt-12 text-sm font-mundial">
-                                    Tap a card or use ⬅️ ➡️ arrow keys • 69 votes per day
+                                    Tap a card or use ⬅️ ➡️ arrow keys • 20 votes per day
                                 </p>
                                 <p className="md:hidden text-gray-500 mt-6 text-xs font-mundial">
-                                    Tap a card to vote • 69 votes per day
+                                    Tap a card to vote • 20 votes per day
                                 </p>
                                 <p className="text-gray-600 mt-2 text-xs font-mono">
                                     vibe coded by <a href="https://x.com/brydisanto" target="_blank" rel="noopener noreferrer" className="hover:text-gvc-gold transition-colors">@brydisanto</a>

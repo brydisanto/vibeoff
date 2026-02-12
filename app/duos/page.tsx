@@ -4,8 +4,20 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, Search } from 'lucide-react';
 import { fetchNftOwner, getOwnerDisplayAndLink } from '@/lib/opensea';
+import { getIpfsUrl } from '@/lib/ipfs';
+
+// Helper to get ephemeral session ID (clears on tab close)
+function getSessionId(): string {
+    if (typeof window === 'undefined') return '';
+    let sid = sessionStorage.getItem('duos_session_id');
+    if (!sid) {
+        sid = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        sessionStorage.setItem('duos_session_id', sid);
+    }
+    return sid;
+}
 
 interface DuoMatchup {
     id: string;
@@ -38,10 +50,11 @@ export default function DuosPage() {
     const [matchup, setMatchup] = useState<[DuoMatchup, DuoMatchup] | null>(null);
     const [loading, setLoading] = useState(true);
     const [voting, setVoting] = useState(false);
-    const [remainingVotes, setRemainingVotes] = useState(10);
+    const [remainingVotes, setRemainingVotes] = useState(20);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboard, setLeaderboard] = useState<LeaderboardDuo[]>([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+    const [leaderboardMode, setLeaderboardMode] = useState<'weekly' | 'alltime'>('alltime');
     const [lastWinner, setLastWinner] = useState<string | null>(null);
     const [duoCount, setDuoCount] = useState(0);
     const [error, setError] = useState<string | null>(null);
@@ -53,14 +66,24 @@ export default function DuosPage() {
         try {
             setLoading(true);
             setError(null);
-            const res = await fetch('/api/duos/matchup');
+            const res = await fetch('/api/duos/matchup', {
+                headers: { 'x-duos-session-id': getSessionId() }
+            });
             const data = await res.json();
             if (data.matchup) {
                 setMatchup(data.matchup);
                 setDuoCount(data.totalDuos);
+                // Update remaining votes from matchup response (1 vote consumed per matchup fetch)
+                if (typeof data.remainingVotes === 'number') {
+                    setRemainingVotes(data.remainingVotes);
+                }
             } else {
                 setError(data.message || 'Not enough Duos');
-                setDuoCount(data.duoCount || 0);
+                setDuoCount(data.totalDuos || data.duoCount || 0);
+                // Also update remaining votes if provided (e.g., when out of votes)
+                if (typeof data.remainingVotes === 'number') {
+                    setRemainingVotes(data.remainingVotes);
+                }
             }
         } catch {
             setError('Failed to load matchup');
@@ -71,18 +94,20 @@ export default function DuosPage() {
 
     const fetchVotes = async () => {
         try {
-            const res = await fetch('/api/duos/vote');
+            const res = await fetch('/api/duos/vote', {
+                headers: { 'x-duos-session-id': getSessionId() }
+            });
             const data = await res.json();
-            setRemainingVotes(data.remainingVotes ?? 10);
+            setRemainingVotes(data.remainingVotes ?? 20);
         } catch {
             console.error('Failed to fetch votes');
         }
     };
 
-    const fetchLeaderboard = async () => {
+    const fetchLeaderboard = async (mode: 'weekly' | 'alltime' = leaderboardMode) => {
         try {
             setLoadingLeaderboard(true);
-            const res = await fetch('/api/duos/leaderboard');
+            const res = await fetch(`/api/duos/leaderboard?mode=${mode}`);
             const data = await res.json();
             setLeaderboard(data.duos || []);
         } catch {
@@ -99,9 +124,9 @@ export default function DuosPage() {
 
     useEffect(() => {
         if (showLeaderboard) {
-            fetchLeaderboard();
+            fetchLeaderboard(leaderboardMode);
         }
-    }, [showLeaderboard]);
+    }, [showLeaderboard, leaderboardMode]);
 
     const handleVote = useCallback(async (winnerId: string, loserId: string) => {
         if (voting || remainingVotes <= 0 || isTransitioning || countdown) return;
@@ -111,7 +136,10 @@ export default function DuosPage() {
         try {
             const res = await fetch('/api/duos/vote', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-duos-session-id': getSessionId()
+                },
                 body: JSON.stringify({ winnerId, loserId })
             });
             const data = await res.json();
@@ -198,23 +226,25 @@ export default function DuosPage() {
             {/* Duo Images - Vertical Stack */}
             <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
                 {/* Top GVC */}
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden">
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black">
                     <Image
                         src={duo.gvc1.url}
                         alt={`GVC #${duo.gvc1.id}`}
                         fill
+                        sizes="(max-width: 768px) 45vw, 300px"
                         className="object-cover"
-                        unoptimized
+                        priority
                     />
                 </div>
                 {/* Bottom GVC */}
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden">
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black">
                     <Image
                         src={duo.gvc2.url}
                         alt={`GVC #${duo.gvc2.id}`}
                         fill
+                        sizes="(max-width: 768px) 45vw, 300px"
                         className="object-cover"
-                        unoptimized
+                        priority
                     />
                 </div>
             </div>
@@ -298,7 +328,7 @@ export default function DuosPage() {
                         {/* Left: Back + Vote Counter */}
                         <div className="flex items-stretch gap-2">
                             <Link
-                                href="/"
+                                href="https://vibeoff.xyz/profile"
                                 className="px-4 py-3 rounded-lg bg-[#1a1a1a] text-gray-300 hover:text-white hover:bg-[#252525] transition-all font-bold font-mundial text-sm uppercase tracking-wider flex items-center gap-2"
                             >
                                 <ArrowLeft size={18} />
@@ -321,6 +351,20 @@ export default function DuosPage() {
                             >
                                 <Users size={18} /> Create Duo
                             </Link>
+                            <Link
+                                href="/duos/hall-of-fame"
+                                className="px-4 py-3 md:py-4 rounded-lg bg-[#1a1a1a] text-gray-300 hover:text-white hover:bg-[#252525] transition-all flex items-center justify-center"
+                                title="Hall of Fame"
+                            >
+                                <Trophy size={20} />
+                            </Link>
+                            <Link
+                                href="/duos/lookup"
+                                className="px-4 py-3 md:py-4 rounded-lg bg-[#1a1a1a] text-gray-300 hover:text-white hover:bg-[#252525] transition-all flex items-center justify-center"
+                                title="DUO Lookup"
+                            >
+                                <Search size={20} />
+                            </Link>
                             <button
                                 onClick={() => setShowLeaderboard(!showLeaderboard)}
                                 className="px-4 md:px-6 py-3 md:py-4 rounded-lg bg-gvc-gold text-black font-bold font-mundial text-sm uppercase tracking-wider hover:bg-[#FFE058] transition-all"
@@ -340,14 +384,41 @@ export default function DuosPage() {
                                 exit={{ opacity: 0, y: -20 }}
                                 className="w-full"
                             >
-                                <h2 className="text-xl md:text-3xl font-display text-gvc-gold glowing-text mb-4 md:mb-6">DUOS LEADERBOARD</h2>
+                                <h2 className="text-xl md:text-3xl font-display text-gvc-gold glowing-text mb-4 md:mb-6">
+                                    DUOS LEADERBOARD ({leaderboardMode === 'weekly' ? 'WEEKLY' : 'ALL TIME'})
+                                </h2>
+
+                                {/* Mode Toggle */}
+                                <div className="flex justify-start mb-4 md:mb-6">
+                                    <div className="flex bg-[#1a1a1a] rounded-lg p-1 border border-white/10">
+                                        <button
+                                            onClick={() => setLeaderboardMode('weekly')}
+                                            className={`px-4 py-2 rounded-md font-mundial text-sm font-bold uppercase tracking-wider transition-all ${leaderboardMode === 'weekly'
+                                                ? 'bg-gvc-gold text-black'
+                                                : 'text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            Weekly
+                                        </button>
+                                        <button
+                                            onClick={() => setLeaderboardMode('alltime')}
+                                            className={`px-4 py-2 rounded-md font-mundial text-sm font-bold uppercase tracking-wider transition-all ${leaderboardMode === 'alltime'
+                                                ? 'bg-gvc-gold text-black'
+                                                : 'text-gray-400 hover:text-white'
+                                                }`}
+                                        >
+                                            All Time
+                                        </button>
+                                    </div>
+                                </div>
 
                                 <div className="w-full bg-[#111] border border-white/20 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden">
                                     {/* Table Header */}
-                                    <div className="grid grid-cols-[24px_60px_1fr_40px_40px_40px_24px] md:grid-cols-[60px_100px_2fr_80px_80px_80px_1.5fr_50px] gap-1 md:gap-4 px-2 md:px-6 py-2 md:py-3 bg-white/5 border-b border-white/10 text-[8px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <div className="grid grid-cols-[24px_60px_1fr_40px_40px_40px_40px_24px] md:grid-cols-[60px_100px_2fr_80px_80px_80px_80px_1.5fr_50px] gap-1 md:gap-4 px-2 md:px-6 py-2 md:py-3 bg-white/5 border-b border-white/10 text-[8px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         <div className="text-center">#</div>
                                         <div>DUO</div>
                                         <div className="hidden md:block">GVCS</div>
+                                        <div className="text-center">+/-</div>
                                         <div className="text-center">Wins</div>
                                         <div className="text-center">Losses</div>
                                         <div className="text-center">Win%</div>
@@ -366,6 +437,8 @@ export default function DuosPage() {
                                             <div className="text-center py-20 text-gray-500">No Duos have been voted on yet</div>
                                         ) : (
                                             leaderboard.slice(0, 50).map((duo, index) => {
+                                                const duoMaxDiff = leaderboard.length > 0 ? Math.max(1, Math.abs(leaderboard[0].wins - leaderboard[0].losses)) : 1;
+                                                const duoDiff = duo.wins - duo.losses;
                                                 const isTop3 = index < 3;
                                                 return (
                                                     <motion.div
@@ -373,7 +446,7 @@ export default function DuosPage() {
                                                         initial={{ opacity: 0, x: -20 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         transition={{ delay: index * 0.03 }}
-                                                        className={`grid grid-cols-[24px_60px_1fr_40px_40px_40px_24px] md:grid-cols-[60px_100px_2fr_80px_80px_80px_1.5fr_50px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''}`}
+                                                        className={`grid grid-cols-[24px_60px_1fr_40px_40px_40px_40px_24px] md:grid-cols-[60px_100px_2fr_80px_80px_80px_80px_1.5fr_50px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors relative group ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''}`}
                                                     >
                                                         {/* Rank */}
                                                         <div className="flex justify-center">
@@ -402,6 +475,17 @@ export default function DuosPage() {
                                                             GVC #{duo.gvc1.id} + #{duo.gvc2.id}
                                                         </div>
 
+                                                        {/* +/- with gradient bar */}
+                                                        <div className="relative flex items-center justify-center h-[24px] md:h-[32px] rounded-md overflow-hidden">
+                                                            <div
+                                                                className={`absolute top-0 left-0 h-full rounded-md ${duoDiff >= 0 ? 'bg-gradient-to-r from-green-500/20 to-transparent' : 'bg-gradient-to-r from-red-500/20 to-transparent'}`}
+                                                                style={{ width: `${Math.min(100, (Math.abs(duoDiff) / duoMaxDiff) * 100)}%` }}
+                                                            />
+                                                            <div className={`relative z-10 font-display text-[10px] md:text-lg font-bold ${duoDiff > 0 ? 'text-green-400' : duoDiff < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                                                                {duoDiff > 0 ? '+' : ''}{duoDiff}
+                                                            </div>
+                                                        </div>
+
                                                         {/* Wins */}
                                                         <div className="text-center">
                                                             <div className="text-gvc-gold font-display text-[10px] md:text-lg">{duo.wins} W</div>
@@ -423,13 +507,14 @@ export default function DuosPage() {
                                                         </div>
 
                                                         {/* OpenSea Link */}
-                                                        <div className="flex justify-center">
+                                                        <div className="flex justify-center relative z-20">
                                                             <a
                                                                 href={`https://opensea.io/${duo.owner}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-gray-500 hover:text-[#2081E2] transition-colors opacity-50 hover:opacity-100"
                                                                 title="View profile on OpenSea"
+                                                                onClick={(e) => e.stopPropagation()}
                                                             >
                                                                 <img
                                                                     src="/opensea-v2.png"
@@ -438,6 +523,9 @@ export default function DuosPage() {
                                                                 />
                                                             </a>
                                                         </div>
+
+                                                        {/* Row Link Overlay */}
+                                                        <Link href={`/duos/${duo.id}`} className="absolute inset-0 z-10" aria-label={`View Duo ${duo.id}`} />
                                                     </motion.div>
                                                 );
                                             })
@@ -456,7 +544,7 @@ export default function DuosPage() {
                             >
                                 {(loading || isTransitioning) ? (
                                     /* Loading State - Countdown or Skeleton Cards */
-                                    <div className="relative">
+                                    <div className="relative w-full">
                                         {/* Countdown Overlay */}
                                         {countdown ? (
                                             <motion.div
@@ -477,67 +565,72 @@ export default function DuosPage() {
                                             </motion.div>
                                         ) : (
                                             <div className="grid grid-cols-[1fr_auto_1fr] gap-2 md:gap-8 items-center w-full">
-                                                {/* Left Loading Card - matches DuoCard structure exactly */}
-                                                <div className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10">
+                                                {/* Left Skeleton Card with Gold Spinners */}
+                                                <motion.div
+                                                    className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
+                                                >
                                                     {/* Duo Images - Vertical Stack */}
                                                     <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
                                                         {/* Top GVC */}
                                                         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-10 h-10 md:w-16 md:h-16 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                         </div>
                                                         {/* Bottom GVC */}
                                                         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-10 h-10 md:w-16 md:h-16 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                         </div>
                                                     </div>
-                                                    {/* Details Section - matches DuoCard footer */}
+
+                                                    {/* Details Section */}
                                                     <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
                                                         <div className="flex flex-col min-w-0 pr-2">
-                                                            <div className="h-6 md:h-8 w-36 md:w-48 bg-white/10 rounded animate-pulse mb-0.5 md:mb-1" />
-                                                            <div className="h-3 md:h-4 w-20 md:w-24 bg-white/5 rounded animate-pulse" />
+                                                            <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
+                                                            <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
                                                         </div>
                                                         <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
-                                                            <div className="w-5 h-5 md:w-6 md:h-6 bg-white/10 rounded animate-pulse" />
+                                                            <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </motion.div>
 
                                                 {/* VS Badge */}
-                                                <div className="flex items-center justify-center">
+                                                <motion.div className="flex items-center justify-center">
                                                     <span className="text-2xl md:text-4xl font-display italic text-gvc-gold/50">VS</span>
-                                                </div>
+                                                </motion.div>
 
-                                                {/* Right Loading Card - matches DuoCard structure exactly */}
-                                                <div className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10">
+                                                {/* Right Skeleton Card with Gold Spinners */}
+                                                <motion.div
+                                                    className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
+                                                >
                                                     {/* Duo Images - Vertical Stack */}
                                                     <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
                                                         {/* Top GVC */}
                                                         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-10 h-10 md:w-16 md:h-16 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                         </div>
                                                         {/* Bottom GVC */}
                                                         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-10 h-10 md:w-16 md:h-16 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                         </div>
                                                     </div>
-                                                    {/* Details Section - matches DuoCard footer */}
+
+                                                    {/* Details Section */}
                                                     <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
                                                         <div className="flex flex-col min-w-0 pr-2">
-                                                            <div className="h-6 md:h-8 w-36 md:w-48 bg-white/10 rounded animate-pulse mb-0.5 md:mb-1" />
-                                                            <div className="h-3 md:h-4 w-20 md:w-24 bg-white/5 rounded animate-pulse" />
+                                                            <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
+                                                            <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
                                                         </div>
                                                         <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
-                                                            <div className="w-5 h-5 md:w-6 md:h-6 bg-white/10 rounded animate-pulse" />
+                                                            <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </motion.div>
                                             </div>
                                         )}
                                     </div>
                                 ) : error ? (
                                     <div className="text-center py-12">
-                                        <p className="text-gray-400 mb-4 font-mundial">{error}</p>
-                                        <p className="text-gray-600 text-sm font-mundial mb-6">{duoCount} Duos submitted • Need at least 2 to start</p>
+                                        <p className="text-gray-300 text-xl md:text-2xl font-mundial mb-6">{error}</p>
                                         <Link
                                             href="/profile"
                                             className="px-6 py-3 bg-gvc-gold text-black rounded-lg font-bold font-mundial uppercase tracking-wider hover:bg-[#FFE058] transition-all"
@@ -559,32 +652,49 @@ export default function DuosPage() {
                                             </motion.div>
                                         )}
 
-                                        {/* Matchup Grid - Side by Side */}
+                                        {/* Matchup Grid - Side by Side with Slide Animation */}
                                         <div className="grid grid-cols-[1fr_auto_1fr] gap-2 md:gap-8 items-center w-full">
-                                            {/* Left Duo */}
-                                            <DuoCard
-                                                duo={matchup[0]}
-                                                onClick={() => canVote && handleVote(matchup[0].id, matchup[1].id)}
-                                                isWinner={lastWinner === matchup[0].id}
-                                                isLoser={lastWinner === matchup[1].id}
-                                            />
+                                            {/* Left Duo - Slides in from left */}
+                                            <motion.div
+                                                key={`left-${matchup[0].id}`}
+                                                initial={{ x: '-100%', opacity: 0 }}
+                                                animate={{ x: 0, opacity: 1 }}
+                                                exit={{ x: '-100%', opacity: 0 }}
+                                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                            >
+                                                <DuoCard
+                                                    duo={matchup[0]}
+                                                    onClick={() => canVote && handleVote(matchup[0].id, matchup[1].id)}
+                                                    isWinner={lastWinner === matchup[0].id}
+                                                    isLoser={lastWinner === matchup[1].id}
+                                                />
+                                            </motion.div>
 
                                             {/* VS Badge */}
                                             <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ delay: 0.1 }}
                                                 className="flex items-center justify-center"
                                             >
                                                 <span className="text-2xl md:text-4xl font-display italic text-gvc-gold">VS</span>
                                             </motion.div>
 
-                                            {/* Right Duo */}
-                                            <DuoCard
-                                                duo={matchup[1]}
-                                                onClick={() => canVote && handleVote(matchup[1].id, matchup[0].id)}
-                                                isWinner={lastWinner === matchup[1].id}
-                                                isLoser={lastWinner === matchup[0].id}
-                                            />
+                                            {/* Right Duo - Slides in from right */}
+                                            <motion.div
+                                                key={`right-${matchup[1].id}`}
+                                                initial={{ x: '100%', opacity: 0 }}
+                                                animate={{ x: 0, opacity: 1 }}
+                                                exit={{ x: '100%', opacity: 0 }}
+                                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                            >
+                                                <DuoCard
+                                                    duo={matchup[1]}
+                                                    onClick={() => canVote && handleVote(matchup[1].id, matchup[0].id)}
+                                                    isWinner={lastWinner === matchup[1].id}
+                                                    isLoser={lastWinner === matchup[0].id}
+                                                />
+                                            </motion.div>
                                         </div>
                                     </>
                                 ) : null}
@@ -594,6 +704,20 @@ export default function DuosPage() {
 
                     {/* Footer - Main Page Style */}
                     <div className="text-center mt-12">
+                        {/* Mode Toggle Ribbon */}
+                        <div className="flex justify-center items-center gap-6 mb-6">
+                            <Link
+                                href="/"
+                                className="font-extrabold font-mundial text-sm md:text-base uppercase tracking-widest text-[#333] hover:text-[#666] transition-all"
+                            >
+                                1v1 Mode
+                            </Link>
+                            <span className="w-0.5 h-6 bg-[#333]"></span>
+                            <span className="font-extrabold font-mundial text-sm md:text-base uppercase tracking-widest text-white">
+                                2v2 Mode
+                            </span>
+                        </div>
+
                         <p className="hidden md:block text-gray-500 text-sm font-mundial">
                             Tap a card or use ⬅️ ➡️ arrow keys • {duoCount} DUOS competing
                         </p>

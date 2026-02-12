@@ -54,48 +54,92 @@ const KEYS = {
 // ============ Utility Functions ============
 
 /**
- * Get current date key in YYYY-MM-DD format based on EST timezone
- * A "day" starts at 12 PM EST and ends at 11:59 AM EST the next day
+ * Get current date key in YYYY-MM-DD format based on EST/EDT timezone
+ * A "day" starts at 12 PM Eastern and ends at 11:59 AM Eastern the next day
+ * 
+ * Uses proper timezone handling to account for EST (UTC-5) vs EDT (UTC-4)
  */
 export function getCurrentDateKey(): string {
     const now = new Date();
 
-    // Convert to EST (UTC-5)
-    const estOffset = -5 * 60;
-    const utcOffset = now.getTimezoneOffset();
-    const estTime = new Date(now.getTime() + (utcOffset + estOffset) * 60 * 1000);
+    // Use Intl to get the actual Eastern timezone offset (handles DST automatically)
+    const estFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        hour12: false
+    });
 
-    // If before noon EST, use yesterday's date key
-    if (estTime.getHours() < ROTATION_HOUR_EST) {
-        estTime.setDate(estTime.getDate() - 1);
+    const parts = estFormatter.formatToParts(now);
+    const year = parts.find(p => p.type === 'year')?.value || '';
+    const month = parts.find(p => p.type === 'month')?.value || '';
+    const day = parts.find(p => p.type === 'day')?.value || '';
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+
+    // If before noon Eastern, use yesterday's date key
+    let dateKey: string;
+    if (hour < ROTATION_HOUR_EST) {
+        // Go back one day
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yParts = estFormatter.formatToParts(yesterday);
+        const yYear = yParts.find(p => p.type === 'year')?.value || '';
+        const yMonth = yParts.find(p => p.type === 'month')?.value || '';
+        const yDay = yParts.find(p => p.type === 'day')?.value || '';
+        dateKey = `${yYear}-${yMonth}-${yDay}`;
+    } else {
+        dateKey = `${year}-${month}-${day}`;
     }
 
-    return estTime.toISOString().split('T')[0];
+    return dateKey;
 }
 
 /**
- * Get the next rotation time (12 PM EST)
+ * Get the next rotation time (12 PM Eastern)
+ * Uses Intl timezone for proper EST/EDT handling
  */
 export function getNextRotationTime(): Date {
     const now = new Date();
 
-    // Convert to EST
-    const estOffset = -5 * 60;
-    const utcOffset = now.getTimezoneOffset();
-    const estNowTimestamp = now.getTime() + (utcOffset + estOffset) * 60 * 1000;
-    const estNow = new Date(estNowTimestamp);
+    // Get current Eastern time
+    const estFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        hour12: false
+    });
 
-    // Create target time (noon EST)
-    const estTarget = new Date(estNowTimestamp);
-    estTarget.setHours(ROTATION_HOUR_EST, 0, 0, 0);
+    const parts = estFormatter.formatToParts(now);
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
 
-    // If already past noon EST, go to tomorrow
-    if (estNow >= estTarget) {
-        estTarget.setDate(estTarget.getDate() + 1);
+    // Calculate milliseconds until next noon Eastern
+    // Create a date at noon Eastern today
+    const today = new Date(now);
+    today.setHours(ROTATION_HOUR_EST + 5, 0, 0, 0); // Approximate UTC for noon EST (will be adjusted)
+
+    // Use simpler approach: if past noon Eastern, add 24 hours
+    // Get current ms since midnight Eastern
+    const minuteFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    const timeParts = minuteFormatter.formatToParts(now);
+    const currentHour = parseInt(timeParts.find(p => p.type === 'hour')?.value || '0', 10);
+    const currentMinute = parseInt(timeParts.find(p => p.type === 'minute')?.value || '0', 10);
+
+    // Calculate minutes until noon Eastern
+    let minutesUntilNoon = (ROTATION_HOUR_EST * 60) - (currentHour * 60 + currentMinute);
+    if (minutesUntilNoon <= 0) {
+        minutesUntilNoon += 24 * 60; // Add a full day
     }
 
-    // Convert back to UTC
-    return new Date(estTarget.getTime() - (utcOffset + estOffset) * 60 * 1000);
+    return new Date(now.getTime() + minutesUntilNoon * 60 * 1000);
 }
 
 /**

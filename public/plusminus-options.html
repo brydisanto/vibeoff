@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>+/- Column Prominence Options</title>
+    <style>
+        @font-face { font-family: 'Brice'; src: url('/fonts/Brice-Bold.otf') format('opentype'); font-weight: 700; }
+        @font-face { font-family: 'Brice'; src: url('/fonts/Brice-Black.otf') format('opentype'); font-weight: 900; }
+        @font-face { font-family: 'Mundial'; src: url('/fonts/Mundial-Regular.otf') format('opentype'); font-weight: 400; }
+        @font-face { font-family: 'Mundial'; src: url('/fonts/MundialDemibold.otf') format('opentype'); font-weight: 600; }
+        @font-face { font-family: 'Mundial'; src: url('/fonts/Mundial-Bold.otf') format('opentype'); font-weight: 700; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Mundial', sans-serif;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-family: 'Brice', serif;
+            text-align: center;
+            font-size: 2rem;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 60px;
+        }
+        .option-wrapper {
+            max-width: 820px;
+            margin: 0 auto 70px;
+        }
+        .option-label {
+            font-family: 'Brice', serif;
+            font-size: 0.7rem;
+            color: #FFD700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .option-desc {
+            color: #555;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        hr.divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin: 0 0 70px;
+        }
+
+        /* Shared table structure */
+        .lb-table {
+            width: 100%;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .lb-header {
+            display: grid;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+        }
+        .lb-row {
+            display: grid;
+            padding: 14px 20px;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s;
+        }
+        .lb-row:hover { background: rgba(255,255,255,0.03); }
+        .lb-row:last-child { border-bottom: none; }
+        .rank-badge {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.75rem;
+        }
+        .rank-1 { background: #FFD700; color: #000; box-shadow: 0 0 12px #FFD700; }
+        .rank-2 { background: #C0C0C0; color: #000; }
+        .rank-3 { background: #CD7F32; color: #000; }
+        .rank-n { color: #555; }
+        .name { font-family: 'Mundial', sans-serif; font-weight: 600; font-size: 0.85rem; color: #fff; }
+        .stat { font-family: 'Brice', serif; font-size: 1rem; text-align: center; }
+        .stat-gold { color: #FFD700; }
+        .stat-gray { color: #666; }
+        .stat-white { color: #fff; }
+        .stat-sm { font-size: 0.8rem; }
+
+        /* Grid for all options */
+        .cols-7 { grid-template-columns: 50px 2fr 80px 70px 70px 70px 70px; gap: 8px; }
+
+        /* ===== OPTION A: Larger font + glow ===== */
+        .opt-a .pm-val {
+            font-family: 'Brice', serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+        }
+        .opt-a .pm-pos { color: #4ade80; }
+        .opt-a .pm-neg { color: #f87171; text-shadow: 0 0 12px rgba(248, 113, 113, 0.4); }
+
+        /* ===== OPTION B: Pill / badge ===== */
+        .opt-b .pm-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Brice', serif;
+            font-size: 0.85rem;
+            font-weight: 900;
+            padding: 4px 14px;
+            border-radius: 20px;
+            min-width: 54px;
+        }
+        .opt-b .pm-pos {
+            background: rgba(74, 222, 128, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.25);
+        }
+        .opt-b .pm-neg {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.25);
+        }
+
+        /* ===== OPTION C: Column background highlight ===== */
+        .opt-c .lb-header { position: relative; }
+        .opt-c .pm-header {
+            color: #4ade80;
+            position: relative;
+        }
+        .opt-c .pm-cell {
+            position: relative;
+            z-index: 1;
+        }
+        .opt-c .lb-row {
+            position: relative;
+        }
+        .opt-c .pm-cell::before {
+            content: '';
+            position: absolute;
+            top: -14px;
+            bottom: -14px;
+            left: -12px;
+            right: -12px;
+            background: rgba(74, 222, 128, 0.04);
+            border-left: 1px solid rgba(74, 222, 128, 0.08);
+            border-right: 1px solid rgba(74, 222, 128, 0.08);
+            z-index: -1;
+        }
+        .opt-c .pm-val {
+            font-family: 'Brice', serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+        .opt-c .pm-pos { color: #4ade80; }
+        .opt-c .pm-neg { color: #f87171; }
+
+        /* ===== OPTION D: Gradient bar behind value ===== */
+        .opt-d .pm-bar-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+        }
+        .opt-d .pm-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 6px;
+            opacity: 0.15;
+        }
+        .opt-d .pm-bar-pos { background: linear-gradient(90deg, #4ade80, transparent); }
+        .opt-d .pm-bar-neg { background: linear-gradient(90deg, #f87171, transparent); }
+        .opt-d .pm-val {
+            position: relative;
+            z-index: 1;
+            font-family: 'Brice', serif;
+            font-size: 1rem;
+            font-weight: 900;
+        }
+        .opt-d .pm-pos { color: #4ade80; }
+        .opt-d .pm-neg { color: #f87171; }
+
+        /* ===== OPTION E: Large + bordered cell ===== */
+        .opt-e .pm-cell-bordered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 8px;
+            padding: 4px 0;
+            background: rgba(74, 222, 128, 0.03);
+        }
+        .opt-e .pm-cell-bordered.neg {
+            border-color: rgba(248, 113, 113, 0.2);
+            background: rgba(248, 113, 113, 0.03);
+        }
+        .opt-e .pm-val {
+            font-family: 'Brice', serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+        }
+        .opt-e .pm-pos { color: #4ade80; }
+        .opt-e .pm-neg { color: #f87171; }
+
+        /* Data rows helper */
+        .data-rows .lb-row:nth-child(1) .rank-badge { background: #FFD700; color: #000; box-shadow: 0 0 12px #FFD700; }
+        .data-rows .lb-row:nth-child(2) .rank-badge { background: #C0C0C0; color: #000; }
+        .data-rows .lb-row:nth-child(3) .rank-badge { background: #CD7F32; color: #000; }
+    </style>
+</head>
+<body>
+
+    <h1>+/- COLUMN OPTIONS</h1>
+    <p class="subtitle">Ways to make the +/- column more prominent in the leaderboard</p>
+
+    <!-- ===== OPTION A ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option A — Bigger Font + Glow</div>
+        <p class="option-desc">Simply increase the +/- font size and add a text glow effect. Minimal change, maximum impact.</p>
+        <div class="lb-table opt-a">
+            <div class="lb-header cols-7">
+                <div style="text-align:center">#</div>
+                <div>Name</div>
+                <div style="text-align:center">+/-</div>
+                <div style="text-align:center">Wins</div>
+                <div style="text-align:center">Losses</div>
+                <div style="text-align:center">Win%</div>
+                <div style="text-align:center">Collector</div>
+            </div>
+            <div class="data-rows">
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-1">1</div></div>
+                    <div class="name">GVC #1500</div>
+                    <div style="text-align:center"><span class="pm-val pm-pos">+58</span></div>
+                    <div class="stat stat-gold stat-sm">75 W</div>
+                    <div class="stat stat-gray stat-sm">17 L</div>
+                    <div class="stat stat-white stat-sm">82%</div>
+                    <div class="stat stat-gray stat-sm">Cosmin0LX</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-2">2</div></div>
+                    <div class="name">GVC #506</div>
+                    <div style="text-align:center"><span class="pm-val pm-pos">+39</span></div>
+                    <div class="stat stat-gold stat-sm">57 W</div>
+                    <div class="stat stat-gray stat-sm">18 L</div>
+                    <div class="stat stat-white stat-sm">76%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-3">3</div></div>
+                    <div class="name">GVC #4655</div>
+                    <div style="text-align:center"><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">34 W</div>
+                    <div class="stat stat-gray stat-sm">3 L</div>
+                    <div class="stat stat-white stat-sm">92%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-n">4</div></div>
+                    <div class="name">GVC #2609</div>
+                    <div style="text-align:center"><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">35 W</div>
+                    <div class="stat stat-gray stat-sm">4 L</div>
+                    <div class="stat stat-white stat-sm">90%</div>
+                    <div class="stat stat-gray stat-sm">Techie_</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== OPTION B ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option B — Colored Pill Badge</div>
+        <p class="option-desc">Wrap the +/- value in a pill-shaped badge with a tinted background. Visually distinct from the plain stat columns.</p>
+        <div class="lb-table opt-b">
+            <div class="lb-header cols-7">
+                <div style="text-align:center">#</div>
+                <div>Name</div>
+                <div style="text-align:center">+/-</div>
+                <div style="text-align:center">Wins</div>
+                <div style="text-align:center">Losses</div>
+                <div style="text-align:center">Win%</div>
+                <div style="text-align:center">Collector</div>
+            </div>
+            <div class="data-rows">
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-1">1</div></div>
+                    <div class="name">GVC #1500</div>
+                    <div style="text-align:center"><span class="pm-badge pm-pos">+58</span></div>
+                    <div class="stat stat-gold stat-sm">75 W</div>
+                    <div class="stat stat-gray stat-sm">17 L</div>
+                    <div class="stat stat-white stat-sm">82%</div>
+                    <div class="stat stat-gray stat-sm">Cosmin0LX</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-2">2</div></div>
+                    <div class="name">GVC #506</div>
+                    <div style="text-align:center"><span class="pm-badge pm-pos">+39</span></div>
+                    <div class="stat stat-gold stat-sm">57 W</div>
+                    <div class="stat stat-gray stat-sm">18 L</div>
+                    <div class="stat stat-white stat-sm">76%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-3">3</div></div>
+                    <div class="name">GVC #4655</div>
+                    <div style="text-align:center"><span class="pm-badge pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">34 W</div>
+                    <div class="stat stat-gray stat-sm">3 L</div>
+                    <div class="stat stat-white stat-sm">92%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-n">4</div></div>
+                    <div class="name">GVC #2609</div>
+                    <div style="text-align:center"><span class="pm-badge pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">35 W</div>
+                    <div class="stat stat-gray stat-sm">4 L</div>
+                    <div class="stat stat-white stat-sm">90%</div>
+                    <div class="stat stat-gray stat-sm">Techie_</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== OPTION C ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option C — Column Highlight Strip</div>
+        <p class="option-desc">A subtle green-tinted column background that runs the full height, with faint borders on each side. The whole column glows.</p>
+        <div class="lb-table opt-c">
+            <div class="lb-header cols-7">
+                <div style="text-align:center">#</div>
+                <div>Name</div>
+                <div style="text-align:center" class="pm-header pm-cell">+/-</div>
+                <div style="text-align:center">Wins</div>
+                <div style="text-align:center">Losses</div>
+                <div style="text-align:center">Win%</div>
+                <div style="text-align:center">Collector</div>
+            </div>
+            <div class="data-rows">
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-1">1</div></div>
+                    <div class="name">GVC #1500</div>
+                    <div style="text-align:center" class="pm-cell"><span class="pm-val pm-pos">+58</span></div>
+                    <div class="stat stat-gold stat-sm">75 W</div>
+                    <div class="stat stat-gray stat-sm">17 L</div>
+                    <div class="stat stat-white stat-sm">82%</div>
+                    <div class="stat stat-gray stat-sm">Cosmin0LX</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-2">2</div></div>
+                    <div class="name">GVC #506</div>
+                    <div style="text-align:center" class="pm-cell"><span class="pm-val pm-pos">+39</span></div>
+                    <div class="stat stat-gold stat-sm">57 W</div>
+                    <div class="stat stat-gray stat-sm">18 L</div>
+                    <div class="stat stat-white stat-sm">76%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-3">3</div></div>
+                    <div class="name">GVC #4655</div>
+                    <div style="text-align:center" class="pm-cell"><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">34 W</div>
+                    <div class="stat stat-gray stat-sm">3 L</div>
+                    <div class="stat stat-white stat-sm">92%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-n">4</div></div>
+                    <div class="name">GVC #2609</div>
+                    <div style="text-align:center" class="pm-cell"><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">35 W</div>
+                    <div class="stat stat-gray stat-sm">4 L</div>
+                    <div class="stat stat-white stat-sm">90%</div>
+                    <div class="stat stat-gray stat-sm">Techie_</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== OPTION D ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option D — Gradient Bar</div>
+        <p class="option-desc">A subtle horizontal gradient bar behind each +/- value, proportional to the value. Gives a visual sense of magnitude.</p>
+        <div class="lb-table opt-d">
+            <div class="lb-header cols-7">
+                <div style="text-align:center">#</div>
+                <div>Name</div>
+                <div style="text-align:center">+/-</div>
+                <div style="text-align:center">Wins</div>
+                <div style="text-align:center">Losses</div>
+                <div style="text-align:center">Win%</div>
+                <div style="text-align:center">Collector</div>
+            </div>
+            <div class="data-rows">
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-1">1</div></div>
+                    <div class="name">GVC #1500</div>
+                    <div class="pm-bar-wrap"><div class="pm-bar pm-bar-pos" style="width:100%"></div><span class="pm-val pm-pos">+58</span></div>
+                    <div class="stat stat-gold stat-sm">75 W</div>
+                    <div class="stat stat-gray stat-sm">17 L</div>
+                    <div class="stat stat-white stat-sm">82%</div>
+                    <div class="stat stat-gray stat-sm">Cosmin0LX</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-2">2</div></div>
+                    <div class="name">GVC #506</div>
+                    <div class="pm-bar-wrap"><div class="pm-bar pm-bar-pos" style="width:67%"></div><span class="pm-val pm-pos">+39</span></div>
+                    <div class="stat stat-gold stat-sm">57 W</div>
+                    <div class="stat stat-gray stat-sm">18 L</div>
+                    <div class="stat stat-white stat-sm">76%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-3">3</div></div>
+                    <div class="name">GVC #4655</div>
+                    <div class="pm-bar-wrap"><div class="pm-bar pm-bar-pos" style="width:53%"></div><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">34 W</div>
+                    <div class="stat stat-gray stat-sm">3 L</div>
+                    <div class="stat stat-white stat-sm">92%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-n">4</div></div>
+                    <div class="name">GVC #2609</div>
+                    <div class="pm-bar-wrap"><div class="pm-bar pm-bar-pos" style="width:53%"></div><span class="pm-val pm-pos">+31</span></div>
+                    <div class="stat stat-gold stat-sm">35 W</div>
+                    <div class="stat stat-gray stat-sm">4 L</div>
+                    <div class="stat stat-white stat-sm">90%</div>
+                    <div class="stat stat-gray stat-sm">Techie_</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== OPTION E ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option E — Bordered Cell</div>
+        <p class="option-desc">Each +/- value gets a subtle bordered box with a faint tinted background. Clean and structured.</p>
+        <div class="lb-table opt-e">
+            <div class="lb-header cols-7">
+                <div style="text-align:center">#</div>
+                <div>Name</div>
+                <div style="text-align:center">+/-</div>
+                <div style="text-align:center">Wins</div>
+                <div style="text-align:center">Losses</div>
+                <div style="text-align:center">Win%</div>
+                <div style="text-align:center">Collector</div>
+            </div>
+            <div class="data-rows">
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-1">1</div></div>
+                    <div class="name">GVC #1500</div>
+                    <div style="text-align:center"><div class="pm-cell-bordered"><span class="pm-val pm-pos">+58</span></div></div>
+                    <div class="stat stat-gold stat-sm">75 W</div>
+                    <div class="stat stat-gray stat-sm">17 L</div>
+                    <div class="stat stat-white stat-sm">82%</div>
+                    <div class="stat stat-gray stat-sm">Cosmin0LX</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-2">2</div></div>
+                    <div class="name">GVC #506</div>
+                    <div style="text-align:center"><div class="pm-cell-bordered"><span class="pm-val pm-pos">+39</span></div></div>
+                    <div class="stat stat-gold stat-sm">57 W</div>
+                    <div class="stat stat-gray stat-sm">18 L</div>
+                    <div class="stat stat-white stat-sm">76%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-3">3</div></div>
+                    <div class="name">GVC #4655</div>
+                    <div style="text-align:center"><div class="pm-cell-bordered"><span class="pm-val pm-pos">+31</span></div></div>
+                    <div class="stat stat-gold stat-sm">34 W</div>
+                    <div class="stat stat-gray stat-sm">3 L</div>
+                    <div class="stat stat-white stat-sm">92%</div>
+                    <div class="stat stat-gray stat-sm">chrisguyot</div>
+                </div>
+                <div class="lb-row cols-7">
+                    <div style="display:flex;justify-content:center"><div class="rank-badge rank-n">4</div></div>
+                    <div class="name">GVC #2609</div>
+                    <div style="text-align:center"><div class="pm-cell-bordered"><span class="pm-val pm-pos">+31</span></div></div>
+                    <div class="stat stat-gold stat-sm">35 W</div>
+                    <div class="stat stat-gray stat-sm">4 L</div>
+                    <div class="stat stat-white stat-sm">90%</div>
+                    <div class="stat stat-gray stat-sm">Techie_</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

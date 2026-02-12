@@ -82,12 +82,15 @@ export default function ProfilePage() {
             return;
         }
 
+        let isStale = false;
+
         setLoading(true);
         setError(null);
 
         fetch(`/api/profile/gvcs?address=${address}`)
             .then(res => res.json())
             .then(data => {
+                if (isStale) return;
                 if (data.error) {
                     setError(data.error);
                 } else {
@@ -109,9 +112,15 @@ export default function ProfilePage() {
             })
             .catch(err => {
                 console.error('Failed to fetch GVCs:', err);
-                setError('Failed to load your GVCs');
+                if (!isStale) setError('Failed to load your GVCs');
             })
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (!isStale) setLoading(false);
+            });
+
+        return () => {
+            isStale = true;
+        };
     }, [address]);
 
     // Fetch user's Duos
@@ -121,9 +130,12 @@ export default function ProfilePage() {
             return;
         }
 
+        let isStale = false;
+
         fetch(`/api/duos/my-duos?wallet=${address}`)
             .then(res => res.json())
             .then(data => {
+                if (isStale) return;
                 if (data.duos) {
                     setMyDuos(data.duos);
                     const inDuos = new Set<number>();
@@ -134,7 +146,13 @@ export default function ProfilePage() {
                     setGvcsInDuos(inDuos);
                 }
             })
-            .catch(err => console.error('Failed to fetch Duos:', err));
+            .catch(err => {
+                console.error('Failed to fetch Duos:', err);
+            });
+
+        return () => {
+            isStale = true;
+        };
     }, [address]);
 
     // Fetch activity feed for user's GVCs
@@ -385,11 +403,18 @@ export default function ProfilePage() {
                                     const duoMatches = duo.stats.wins + duo.stats.losses;
                                     const duoWinRate = duoMatches > 0 ? Math.round((duo.stats.wins / duoMatches) * 100) : 0;
                                     return (
-                                        <div key={duo.id} className="bg-zinc-900/50 rounded-xl p-4 border border-white/10 hover:border-[#FFE048]/30 transition-colors relative group">
+                                        <Link
+                                            key={duo.id}
+                                            href={`/duos/${duo.id}`}
+                                            className="bg-zinc-900/50 rounded-xl p-4 border border-white/10 hover:border-[#FFE048]/30 transition-colors relative group block"
+                                        >
                                             {/* Delete button */}
                                             <button
-                                                onClick={() => deleteDuo(duo.id)}
-                                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-lg text-red-400"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    deleteDuo(duo.id);
+                                                }}
+                                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-lg text-red-400 z-10"
                                                 title="Delete Duo"
                                             >
                                                 <X size={14} />
@@ -409,13 +434,13 @@ export default function ProfilePage() {
                                             {/* Stats - centered, matching YOUR GVCs format */}
                                             <div className="text-center mt-2">
                                                 <div className="text-2xl md:text-3xl font-display text-gray-200">
-                                                    {duo.stats.wins}-{duo.stats.losses}
+                                                    {duo.stats.wins}-{duo.stats.losses} <span className={`text-lg font-bold ${duo.stats.wins - duo.stats.losses > 0 ? 'text-green-400' : duo.stats.wins - duo.stats.losses < 0 ? 'text-red-400' : 'text-gray-400'}`}>({duo.stats.wins - duo.stats.losses > 0 ? '+' : ''}{duo.stats.wins - duo.stats.losses})</span>
                                                 </div>
-                                                <div className="text-sm text-gray-500 font-mono mt-1">
+                                                <div className="text-sm text-gray-500 font-mundial mt-1">
                                                     ({duoWinRate}% Win Rate)
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     );
                                 })}
                             </div>

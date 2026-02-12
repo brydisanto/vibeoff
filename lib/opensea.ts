@@ -1,4 +1,4 @@
-const OPENSEA_API_KEY = '003c902b643e4b06b14ae18bda215739';
+const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY || '003c902b643e4b06b14ae18bda215739';
 const CONTRACT_ADDRESS = '0xB8Ea78fcaCEf50d41375E44E6814ebbA36Bb33c4';
 
 interface OpenSeaNftResponse {

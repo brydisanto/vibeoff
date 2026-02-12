@@ -3,7 +3,7 @@ import { Character, INITIAL_CHARACTERS } from './data';
 
 const STORAGE_KEY = 'neon_solstice_state_v20';
 const SESSION_MATCHUP_KEY = 'current_matchup_ids';
-const DAILY_LIMIT = 69;
+const DAILY_LIMIT = 20;
 
 interface UserState {
     lastPlayedDate: string;

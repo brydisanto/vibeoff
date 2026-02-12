@@ -1,4 +1,4 @@
-import { PLASTIC_IDS, FEMALE_IDS, RANGER_IDS } from './filter_ids';
+import { PLASTIC_IDS, FEMALE_IDS, RANGER_IDS, NVC_IDS } from './filter_ids';
 
 export interface CharacterStats {
     wins: number;
@@ -21,6 +21,7 @@ export interface Character {
     isPlastic: boolean;
     isFemale: boolean;
     isRanger: boolean;
+    isNVC: boolean;
 }
 
 // Real GVC Token IDs (All 6969 characters)
@@ -99,6 +100,7 @@ const createInitialCharacter = (id: number): Character => ({
     isPlastic: PLASTIC_IDS.includes(id),
     isFemale: FEMALE_IDS.includes(id),
     isRanger: RANGER_IDS.includes(id),
+    isNVC: NVC_IDS.includes(id),
     weekly: { wins: 0, losses: 0, matches: 0 },
     allTime: { wins: 0, losses: 0, matches: 0 }
 });

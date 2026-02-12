@@ -45,11 +45,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'You can only delete your own Duos' }, { status: 403 });
         }
 
+        // Archive before delete
+        const archiveKey = `duos:archive:${duoId}`;
+        await kv.hset(archiveKey, {
+            ...duoData,
+            deletedAt: Date.now(),
+            deletedBy: normalizedWallet,
+            reason: 'manual_delete'
+        });
+
         // Delete all associated keys
         await Promise.all([
             kv.del(`duos:${duoId}`),
             kv.del(`duos:gvc:${duoData.gvc1Id}`),
             kv.del(`duos:gvc:${duoData.gvc2Id}`),
+            kv.del(`duos:history:${duoId}`),
             kv.zrem('duos:all', duoId),
             kv.srem(`duos:wallet:${normalizedWallet}`, duoId)
         ]);

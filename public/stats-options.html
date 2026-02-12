@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GVC Stats — Layout Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            font-size: 2rem;
+            color: #FFD700;
+            margin-bottom: 16px;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 60px;
+        }
+        .option-wrapper {
+            max-width: 700px;
+            margin: 0 auto 80px;
+        }
+        .option-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: #FFD700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .option-desc {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* ===== OPTION A: Current 3×2 Grid ===== */
+        .grid-a {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .grid-a .stat-card {
+            background: #111;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .grid-a .stat-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .grid-a .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+        }
+
+        /* ===== OPTION B: Hero +/- with Side Stats ===== */
+        .layout-b {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 16px;
+        }
+        .hero-stat-b {
+            background: linear-gradient(135deg, #0a1a0a 0%, #111 100%);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 16px;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-stat-b::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-stat-b .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #4ade80;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+        .hero-stat-b .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #4ade80;
+            text-shadow: 0 0 30px rgba(74,222,128,0.3);
+        }
+        .hero-stat-b .stat-sub {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .side-stats-b {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .side-stats-b .stat-card {
+            background: #111;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .side-stats-b .stat-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #555;
+            letter-spacing: 1px;
+        }
+        .side-stats-b .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .side-stats-b .rank-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #1a1500 0%, #111 100%);
+            border: 1px solid rgba(255,215,0,0.15);
+        }
+
+        /* ===== OPTION C: Sports Scoreboard ===== */
+        .scoreboard-c {
+            background: #0a0a0a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .scoreboard-top {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 24px 32px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .scoreboard-wins, .scoreboard-losses {
+            text-align: center;
+        }
+        .scoreboard-big {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .scoreboard-label-sm {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+            margin-top: 4px;
+        }
+        .scoreboard-divider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 32px;
+        }
+        .scoreboard-dash {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #333;
+        }
+        .scoreboard-bottom {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+        .scoreboard-bottom .sb-cell {
+            padding: 16px 20px;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.04);
+        }
+        .scoreboard-bottom .sb-cell:last-child {
+            border-right: none;
+        }
+        .sb-cell .stat-label {
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #444;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .sb-cell .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* ===== OPTION D: Stat Bar / Inline ===== */
+        .inline-d {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .stat-row-d {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #0d0d0d;
+            border-radius: 12px;
+            padding: 12px 20px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .stat-row-d.hero-row {
+            background: linear-gradient(90deg, rgba(74,222,128,0.08) 0%, #0d0d0d 100%);
+            border: 1px solid rgba(74,222,128,0.15);
+            padding: 18px 20px;
+        }
+        .stat-row-d .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .stat-row-d .stat-info {
+            flex: 1;
+        }
+        .stat-row-d .stat-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #555;
+            letter-spacing: 1px;
+        }
+        .stat-row-d .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .stat-row-d .stat-bar-wrap {
+            flex: 1;
+            max-width: 200px;
+        }
+        .stat-bar-bg {
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease;
+        }
+        .stat-row-d.hero-row .stat-value {
+            font-size: 1.8rem;
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(74,222,128,0.2);
+        }
+        .wl-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Utility color classes */
+        .text-gold { color: #FFD700; }
+        .text-green { color: #4ade80; }
+        .text-red { color: #f87171; }
+        .text-white { color: #fff; }
+        .text-gray { color: #888; }
+
+        /* Divider */
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 0 0 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>STATS LAYOUT OPTIONS</h1>
+    <p class="subtitle">GVC #1500 — Sample data: Rank #1 · 92 Matches · 75W / 17L · 82% WR · +58</p>
+
+    <!-- ===== OPTION A ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option A — Clean Grid</div>
+        <p class="option-desc">Current layout. Two rows of three, simple cards. Clean and functional.</p>
+        <div class="grid-a">
+            <div class="stat-card">
+                <div class="stat-label">Rank</div>
+                <div class="stat-value text-white">#1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value text-green">82%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">+/-</div>
+                <div class="stat-value text-green">+58</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Matches</div>
+                <div class="stat-value text-white">92</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Wins</div>
+                <div class="stat-value text-gold">75</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Losses</div>
+                <div class="stat-value text-gray">17</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== OPTION B ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option B — Hero +/- Focus</div>
+        <p class="option-desc">Large +/- on the left as the hero stat, with supporting stats stacked on the right. Emphasizes the key ranking metric.</p>
+        <div class="layout-b">
+            <div class="hero-stat-b">
+                <div class="stat-label">Plus / Minus</div>
+                <div class="stat-value">+58</div>
+                <div class="stat-sub">75W — 17L</div>
+            </div>
+            <div class="side-stats-b">
+                <div class="stat-card rank-card">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-value text-gold">#1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value text-green">82%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Matches</div>
+                    <div class="stat-value text-white">92</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Wins</div>
+                    <div class="stat-value text-gold">75</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Losses</div>
+                    <div class="stat-value text-gray">17</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== OPTION C ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option C — Sports Scoreboard</div>
+        <p class="option-desc">Inspired by ESPN scorecards. Big W-L record up top like a sports score, with detailed stats in a ticker-style row below.</p>
+        <div class="scoreboard-c">
+            <div class="scoreboard-top">
+                <div class="scoreboard-wins">
+                    <div class="scoreboard-big text-gold">75</div>
+                    <div class="scoreboard-label-sm">Wins</div>
+                </div>
+                <div class="scoreboard-divider">
+                    <div class="scoreboard-dash">—</div>
+                </div>
+                <div class="scoreboard-losses">
+                    <div class="scoreboard-big text-gray">17</div>
+                    <div class="scoreboard-label-sm">Losses</div>
+                </div>
+            </div>
+            <div class="scoreboard-bottom">
+                <div class="sb-cell">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-value text-white">#1</div>
+                </div>
+                <div class="sb-cell">
+                    <div class="stat-label">+/-</div>
+                    <div class="stat-value text-green">+58</div>
+                </div>
+                <div class="sb-cell">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value text-green">82%</div>
+                </div>
+                <div class="sb-cell">
+                    <div class="stat-label">Matches</div>
+                    <div class="stat-value text-white">92</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ===== OPTION D ===== -->
+    <div class="option-wrapper">
+        <div class="option-label">Option D — Stat Rows with Bars</div>
+        <p class="option-desc">Vertical list of stat rows with visual progress bars. +/- gets a hero treatment at the top. Good for mobile-first layouts.</p>
+        <div class="inline-d">
+            <div class="stat-row-d hero-row">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                    <div class="stat-label">Plus / Minus</div>
+                    <div class="stat-value">+58</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.65rem;color:#444;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Rank</div>
+                    <div style="font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:700;color:#FFD700;">#1</div>
+                </div>
+            </div>
+            <div class="wl-group">
+                <div class="stat-row-d">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Wins</div>
+                        <div class="stat-value text-gold">75</div>
+                        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:82%;background:#FFD700;"></div></div>
+                    </div>
+                </div>
+                <div class="stat-row-d">
+                    <div class="stat-icon">💀</div>
+                    <div class="stat-info">
+                        <div class="stat-label">losses</div>
+                        <div class="stat-value text-gray">17</div>
+                        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:18%;background:#666;"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="wl-group">
+                <div class="stat-row-d">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Win Rate</div>
+                        <div class="stat-value text-green">82%</div>
+                        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:82%;background:#4ade80;"></div></div>
+                    </div>
+                </div>
+                <div class="stat-row-d">
+                    <div class="stat-icon">⚔️</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Matches</div>
+                        <div class="stat-value text-white">92</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

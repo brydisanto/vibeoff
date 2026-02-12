@@ -41,9 +41,12 @@ async function getVaultsForDelegate(hotWallet: string): Promise<string[]> {
 }
 
 /**
- * Fetch GVCs owned by a specific address from OpenSea
+ * Fetch GVCs owned by a specific address from OpenSea with retry logic
  */
-async function fetchGvcsForAddress(address: string): Promise<number[]> {
+async function fetchGvcsForAddress(address: string, retryCount = 0): Promise<number[]> {
+    const MAX_RETRIES = 3;
+    const BASE_DELAY = 500; // 500ms base delay
+
     try {
         const response = await fetch(
             `https://api.opensea.io/api/v2/chain/ethereum/account/${address}/nfts?limit=200`,
@@ -55,12 +58,31 @@ async function fetchGvcsForAddress(address: string): Promise<number[]> {
             }
         );
 
-        if (!response.ok) {
-            console.error(`OpenSea API error for ${address}:`, response.status);
+        // Handle rate limiting with retry
+        if (response.status === 429 || !response.ok) {
+            if (retryCount < MAX_RETRIES) {
+                const delay = BASE_DELAY * Math.pow(2, retryCount); // Exponential backoff
+                console.log(`Rate limited for ${address}, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return fetchGvcsForAddress(address, retryCount + 1);
+            }
+            console.error(`OpenSea API error for ${address} after ${MAX_RETRIES} retries:`, response.status);
             return [];
         }
 
         const data = await response.json();
+
+        // Check for rate limit error in response body
+        if (data.errors && data.errors.includes('Rate limit exceeded')) {
+            if (retryCount < MAX_RETRIES) {
+                const delay = BASE_DELAY * Math.pow(2, retryCount);
+                console.log(`Rate limit in body for ${address}, retrying in ${delay}ms`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return fetchGvcsForAddress(address, retryCount + 1);
+            }
+            return [];
+        }
+
         const nfts = data.nfts || [];
 
         // Filter to only GVC NFTs by contract address
@@ -74,6 +96,12 @@ async function fetchGvcsForAddress(address: string): Promise<number[]> {
             .map((nft: any) => parseInt(nft.identifier || nft.token_id || '0'))
             .filter((id: number) => id > 0 && id <= 6969);
     } catch (error) {
+        if (retryCount < MAX_RETRIES) {
+            const delay = BASE_DELAY * Math.pow(2, retryCount);
+            console.log(`Fetch error for ${address}, retrying in ${delay}ms`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return fetchGvcsForAddress(address, retryCount + 1);
+        }
         console.error(`Failed to fetch GVCs for ${address}:`, error);
         return [];
     }
@@ -92,12 +120,20 @@ export async function GET(request: NextRequest) {
         const delegatedVaults = await getVaultsForDelegate(address);
         console.log(`Found ${delegatedVaults.length} delegated vaults for ${address}`);
 
-        // 2. Fetch GVCs from connected wallet + all delegated vaults
+        // 2. Fetch GVCs from connected wallet + all delegated vaults in PARALLEL
         const allAddresses = [address, ...delegatedVaults];
         const gvcIdsByAddress: Map<number, string> = new Map(); // Track which address owns which GVC
 
-        for (const addr of allAddresses) {
-            const gvcIds = await fetchGvcsForAddress(addr);
+        // Fetch all addresses in parallel to avoid timeout
+        const results = await Promise.all(
+            allAddresses.map(async (addr) => {
+                const gvcIds = await fetchGvcsForAddress(addr);
+                return { addr, gvcIds };
+            })
+        );
+
+        // Combine results
+        for (const { addr, gvcIds } of results) {
             gvcIds.forEach(id => {
                 if (!gvcIdsByAddress.has(id)) {
                     gvcIdsByAddress.set(id, addr);

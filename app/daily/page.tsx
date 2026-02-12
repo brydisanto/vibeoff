@@ -290,7 +290,9 @@ export default function DailyVibeOffPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl md:text-3xl font-bold text-gvc-gold">{votes.char1}</div>
+                                        <div className={`text-2xl md:text-3xl font-bold text-gvc-gold transition-all ${hasVoted ? '' : 'blur-md select-none'}`}>
+                                            {hasVoted ? votes.char1 : '??'}
+                                        </div>
                                         <div className="text-[10px] text-gray-500 uppercase">votes</div>
                                     </div>
                                 </div>
@@ -364,7 +366,9 @@ export default function DailyVibeOffPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl md:text-3xl font-bold text-gvc-gold">{votes.char2}</div>
+                                        <div className={`text-2xl md:text-3xl font-bold text-gvc-gold transition-all ${hasVoted ? '' : 'blur-md select-none'}`}>
+                                            {hasVoted ? votes.char2 : '??'}
+                                        </div>
                                         <div className="text-[10px] text-gray-500 uppercase">votes</div>
                                     </div>
                                 </div>
@@ -375,7 +379,7 @@ export default function DailyVibeOffPage() {
 
                 {/* Vote Results Banner - Option B */}
                 <div className="max-w-4xl mx-auto mt-10">
-                    <div className="bg-gradient-to-br from-[#1a1a0a] to-[#0a0a0a] border border-gvc-gold/20 rounded-2xl p-6 md:p-8">
+                    <div className={`bg-gradient-to-br from-[#1a1a0a] to-[#0a0a0a] border border-gvc-gold/20 rounded-2xl p-6 md:p-8 transition-all ${hasVoted ? '' : 'blur-md select-none pointer-events-none'}`}>
                         {/* Percentage labels */}
                         <div className="flex justify-between mb-3">
                             <motion.span
@@ -383,21 +387,21 @@ export default function DailyVibeOffPage() {
                                 animate={{ opacity: 1 }}
                                 className={`text-4xl md:text-5xl font-bold ${percent1 >= percent2 ? 'text-gvc-gold' : 'text-gray-600'}`}
                             >
-                                {percent1}%
+                                {hasVoted ? `${percent1}%` : '??%'}
                             </motion.span>
                             <motion.span
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 className={`text-4xl md:text-5xl font-bold ${percent2 > percent1 ? 'text-gvc-gold' : 'text-gray-600'}`}
                             >
-                                {percent2}%
+                                {hasVoted ? `${percent2}%` : '??%'}
                             </motion.span>
                         </div>
                         {/* Wide progress bar */}
                         <div className="h-6 bg-[#222] rounded-xl overflow-hidden flex mb-4">
                             <motion.div
                                 initial={{ width: '50%' }}
-                                animate={{ width: `${percent1}%` }}
+                                animate={{ width: hasVoted ? `${percent1}%` : '50%' }}
                                 transition={{ duration: 0.5 }}
                                 className={`h-full rounded-xl ${percent1 >= percent2
                                     ? 'bg-gradient-to-r from-gvc-gold to-yellow-500'
@@ -406,7 +410,7 @@ export default function DailyVibeOffPage() {
                             />
                             <motion.div
                                 initial={{ width: '50%' }}
-                                animate={{ width: `${percent2}%` }}
+                                animate={{ width: hasVoted ? `${percent2}%` : '50%' }}
                                 transition={{ duration: 0.5 }}
                                 className={`h-full ${percent2 > percent1
                                     ? 'bg-gradient-to-r from-gvc-gold to-yellow-500'
@@ -416,7 +420,7 @@ export default function DailyVibeOffPage() {
                         </div>
                         {/* Vote count centered */}
                         <div className="text-center text-gray-500 text-sm uppercase tracking-widest">
-                            {totalVotes} Total Vote{totalVotes !== 1 ? 's' : ''}
+                            {hasVoted ? `${totalVotes} Total Vote${totalVotes !== 1 ? 's' : ''}` : 'Vote to reveal results'}
                         </div>
                     </div>
 

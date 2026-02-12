@@ -48,14 +48,14 @@ export async function POST(request: Request) {
         ]);
 
         if (existing1) {
-            return NextResponse.json({ 
-                error: `GVC #${gvc1Id} is already in a Duo` 
+            return NextResponse.json({
+                error: `GVC #${gvc1Id} is already in a Duo`
             }, { status: 409 });
         }
 
         if (existing2) {
-            return NextResponse.json({ 
-                error: `GVC #${gvc2Id} is already in a Duo` 
+            return NextResponse.json({
+                error: `GVC #${gvc2Id} is already in a Duo`
             }, { status: 409 });
         }
 
@@ -63,9 +63,9 @@ export async function POST(request: Request) {
         const sortedIds = [gvc1Id, gvc2Id].sort((a, b) => a - b);
         const duoId = `${sortedIds[0]}-${sortedIds[1]}`;
 
-        // Get GVC details
-        const gvc1 = INITIAL_CHARACTERS.find(c => c.id === gvc1Id);
-        const gvc2 = INITIAL_CHARACTERS.find(c => c.id === gvc2Id);
+        // Get GVC details using SORTED IDs so URLs match IDs
+        const gvc1 = INITIAL_CHARACTERS.find(c => c.id === sortedIds[0]);
+        const gvc2 = INITIAL_CHARACTERS.find(c => c.id === sortedIds[1]);
 
         // Store Duo
         const duoData = {

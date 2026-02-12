@@ -15,11 +15,20 @@ const kv = new Redis({
 
 export const dynamic = 'force-dynamic';
 
-const DAILY_VOTE_LIMIT = 10;
+const DAILY_VOTE_LIMIT = 20;
 const K_FACTOR = 32;
 
 function getDateKey(): string {
     return new Date().toISOString().split('T')[0];
+}
+
+// Get ISO week key (YYYY-WNN format)
+function getWeekKey(): string {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const days = Math.floor((now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+    const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+    return `${now.getFullYear()}-W${weekNumber.toString().padStart(2, '0')}`;
 }
 
 function calculateExpectedScore(ratingA: number, ratingB: number): number {
@@ -102,19 +111,77 @@ export async function POST(request: NextRequest) {
         const newWinnerElo = Math.round(winnerElo + K_FACTOR * (1 - expectedWinner));
         const newLoserElo = Math.round(loserElo + K_FACTOR * (0 - expectedLoser));
 
-        // Update stats
+        // Update stats (vote count already consumed on matchup fetch)
+        const weekKey = getWeekKey();
+        const weeklyWinnerKey = `duos:weekly:${weekKey}:${winnerId}`;
+        const weeklyLoserKey = `duos:weekly:${weekKey}:${loserId}`;
+
         await Promise.all([
+            // All-time stats
             kv.hincrby(`duos:${winnerId}`, 'wins', 1),
             kv.hincrby(`duos:${winnerId}`, 'matches', 1),
             kv.hset(`duos:${winnerId}`, { elo: newWinnerElo }),
             kv.hincrby(`duos:${loserId}`, 'losses', 1),
             kv.hincrby(`duos:${loserId}`, 'matches', 1),
             kv.hset(`duos:${loserId}`, { elo: newLoserElo }),
-            kv.incr(voteKey),
-            kv.expire(voteKey, 86400 * 2) // 2 days TTL
+            // Weekly stats (auto-expire after 8 days)
+            kv.hincrby(weeklyWinnerKey, 'wins', 1),
+            kv.hincrby(weeklyLoserKey, 'losses', 1),
         ]);
 
-        const newVoteCount = currentVotes + 1;
+        // Set TTL on weekly keys (8 days = 691200 seconds)
+        await Promise.all([
+            kv.expire(weeklyWinnerKey, 691200),
+            kv.expire(weeklyLoserKey, 691200),
+        ]);
+
+        // Update Session State to 'vote' -> Next fetch will be free
+        const sessionId = request.headers.get('x-duos-session-id');
+        if (sessionId) {
+            const stateKey = `duos:state:${dateKey}:${sessionId}`;
+            await kv.set(stateKey, 'vote', { ex: 60 * 60 * 24 });
+        }
+
+        // Record battle history for both DUOs
+        const timestamp = Date.now();
+
+        // Get opponent info for history display (DUO IDs use hyphen format like "1166-3183")
+        const winnerGvc1Id = parseInt(winnerId.split('-')[0]);
+        const winnerGvc2Id = parseInt(winnerId.split('-')[1]);
+        const loserGvc1Id = parseInt(loserId.split('-')[0]);
+        const loserGvc2Id = parseInt(loserId.split('-')[1]);
+
+        // Winner's history (W against loser)
+        const winnerHistoryEntry = JSON.stringify({
+            opponentId: loserId,
+            opponentGvc1: { id: loserGvc1Id, name: `GVC #${loserGvc1Id}`, url: `https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/${loserGvc1Id}.jpg` },
+            opponentGvc2: { id: loserGvc2Id, name: `GVC #${loserGvc2Id}`, url: `https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/${loserGvc2Id}.jpg` },
+            result: 'W',
+            timestamp
+        });
+
+        // Loser's history (L against winner)
+        const loserHistoryEntry = JSON.stringify({
+            opponentId: winnerId,
+            opponentGvc1: { id: winnerGvc1Id, name: `GVC #${winnerGvc1Id}`, url: `https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/${winnerGvc1Id}.jpg` },
+            opponentGvc2: { id: winnerGvc2Id, name: `GVC #${winnerGvc2Id}`, url: `https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/${winnerGvc2Id}.jpg` },
+            result: 'L',
+            timestamp
+        });
+
+        // Push history entries (keep last 100 per DUO)
+        await Promise.all([
+            kv.lpush(`duos:history:${winnerId}`, winnerHistoryEntry),
+            kv.ltrim(`duos:history:${winnerId}`, 0, 99),
+            kv.lpush(`duos:history:${loserId}`, loserHistoryEntry),
+            kv.ltrim(`duos:history:${loserId}`, 0, 99)
+        ]);
+
+        // Increment vote count
+        const newVoteCount = await kv.incr(voteKey);
+        await kv.expire(voteKey, 60 * 60 * 24);
+
+        // Get current vote count for response
         const response = NextResponse.json({
             success: true,
             winner: { id: winnerId, newElo: newWinnerElo },
