@@ -1,8 +1,8 @@
 export const IPFS_GATEWAYS = [
-    'https://cloudflare-ipfs.com/ipfs/',
-    'https://ipfs.io/ipfs/',
-    'https://dweb.link/ipfs/',
-    'https://nftstorage.link/ipfs/'
+    'https://nftstorage.link/ipfs/',    // Fastest - Cloudflare CDN backed
+    'https://dweb.link/ipfs/',           // Fast - Protocol Labs CDN
+    'https://cloudflare-ipfs.com/ipfs/', // Slower fallback
+    'https://ipfs.io/ipfs/'              // Slowest fallback
 ];
 
 export const getIpfsUrl = (originalUrl: string, gatewayIndex: number = 0): string => {
