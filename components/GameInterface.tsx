@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useGameLogic } from '@/lib/useGameLogic';
-import { getIpfsUrl } from '@/lib/ipfs';
+import { getIpfsUrl, checkIpfsBlocked } from '@/lib/ipfs';
 import VibeCard from './VibeCard';
 import Leaderboard from './Leaderboard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,6 +43,11 @@ export default function GameInterface() {
         } catch (e) {
             setWalletConnected(false);
         }
+    }, []);
+
+    // Proactively check if IPFS is blocked (e.g. Dubai/UAE)
+    useEffect(() => {
+        checkIpfsBlocked();
     }, []);
 
     // Fetch global stats for current matchup

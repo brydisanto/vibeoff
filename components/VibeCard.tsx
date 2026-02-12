@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fetchNftOwner, getOwnerDisplayAndLink } from '@/lib/opensea';
-import { IPFS_GATEWAYS, getIpfsUrl } from '@/lib/ipfs';
+import { IPFS_GATEWAYS, getIpfsUrl, markIpfsBlocked, isIpfsBlocked } from '@/lib/ipfs';
 
 interface VibeCardProps {
     character: Character;
@@ -63,6 +63,10 @@ export default function VibeCard({ character, onClick, disabled, stats }: VibeCa
                         const nextIndex = currentGatewayIndex + 1;
                         if (nextIndex < IPFS_GATEWAYS.length) {
                             setCurrentGatewayIndex(nextIndex);
+                        } else if (!isIpfsBlocked()) {
+                            // All gateways failed — IPFS is likely blocked. Switch to proxy.
+                            markIpfsBlocked();
+                            setCurrentGatewayIndex(0); // Reset to trigger re-render with proxy URL
                         }
                     }}
                 />
