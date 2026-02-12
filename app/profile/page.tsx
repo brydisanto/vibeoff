@@ -549,9 +549,9 @@ export default function ProfilePage() {
                                                         {gvc.name}
                                                     </h3>
                                                     <div className="text-3xl md:text-4xl font-display text-gray-200 mb-1">
-                                                        {gvc.allTime.wins}-{gvc.allTime.losses}
+                                                        {gvc.allTime.wins}-{gvc.allTime.losses} <span className={`text-xl font-bold ${gvc.allTime.wins - gvc.allTime.losses > 0 ? 'text-green-400' : gvc.allTime.wins - gvc.allTime.losses < 0 ? 'text-red-400' : 'text-gray-400'}`}>({gvc.allTime.wins - gvc.allTime.losses > 0 ? '+' : ''}{gvc.allTime.wins - gvc.allTime.losses})</span>
                                                     </div>
-                                                    <div className="text-sm text-gray-500 font-mono mt-1">
+                                                    <div className="text-sm text-gray-500 font-mundial mt-1">
                                                         ({getWinRate(gvc)}% Win Rate)
                                                     </div>
                                                 </div>
