@@ -497,7 +497,14 @@ export default function ProfilePage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {gvcs.map(gvc => {
+                                    {[...gvcs].sort((a, b) => {
+                                        const diffA = a.allTime.wins - a.allTime.losses;
+                                        const diffB = b.allTime.wins - b.allTime.losses;
+                                        if (diffA !== diffB) return diffB - diffA;
+                                        const rateA = a.allTime.matches > 0 ? a.allTime.wins / a.allTime.matches : 0;
+                                        const rateB = b.allTime.matches > 0 ? b.allTime.wins / b.allTime.matches : 0;
+                                        return rateB - rateA;
+                                    }).map(gvc => {
                                         const streak = gvc.allTime.winStreak || 0;
                                         const isFire = streak >= 3;
 
