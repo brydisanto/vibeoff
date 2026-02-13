@@ -1,7 +1,7 @@
 import { kv } from './kv';
 
 const WINDOW_DURATION = 60; // seconds
-const MAX_REQUESTS = 30; // votes per window
+const MAX_REQUESTS = 69; // votes per window
 
 export interface RateLimitResult {
     success: boolean;

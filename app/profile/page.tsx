@@ -198,10 +198,12 @@ export default function ProfilePage() {
     // Fetch activity feed for user's GVCs
     const gvcIds = gvcs.map(g => g.id).sort().join(',');
 
-    useEffect(() => {
-        if (!gvcIds) return;
+    const duoIds = myDuos.map(d => d.id).join(',');
 
-        fetch(`/api/profile/activity?ids=${gvcIds}`)
+    useEffect(() => {
+        if (!gvcIds && !duoIds) return;
+
+        fetch(`/api/profile/activity?ids=${gvcIds}&duoIds=${duoIds}`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
@@ -209,7 +211,7 @@ export default function ProfilePage() {
                 }
             })
             .catch(err => console.error('Failed to fetch activity:', err));
-    }, [gvcIds]);
+    }, [gvcIds, duoIds]);
 
     // Calculate Collector Rank
     useEffect(() => {
@@ -746,7 +748,7 @@ export default function ProfilePage() {
                                 <p className="text-gray-600 text-sm font-mundial">Select 2 of your GVCs to enter them into the DUOS competition!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {myDuos.map(duo => {
                                     const duoMatches = duo.stats.wins + duo.stats.losses;
                                     const duoWinRate = duoMatches > 0 ? Math.round((duo.stats.wins / duoMatches) * 100) : 0;
