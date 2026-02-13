@@ -680,7 +680,7 @@ export default function ProfilePage() {
                                                         {/* Price Badge (Listed Only) */}
                                                         {'price' in gvc && (
                                                             <div className="absolute bottom-3 left-3 bg-[#FFE048] text-black px-3 py-1.5 rounded-lg font-bold text-sm shadow-xl z-20 flex items-center gap-1">
-                                                                <span className="text-xs">Ξ</span> {gvc.price}
+                                                                <span className="text-xs">Ξ</span> {(gvc as any).price}
                                                             </div>
                                                         )}
                                                     </div>
