@@ -82,11 +82,16 @@ export async function GET(request: NextRequest) {
         // Enrich opponent data
         const enrichedHistory = recentHistory.map(item => {
             if (item.type === 'duo') {
+                const [gvc1Id, gvc2Id] = (item.duoId || '').split('-').map((id: string) => parseInt(id));
+                const gvc1 = characterMap.get(gvc1Id);
+                const gvc2 = characterMap.get(gvc2Id);
+
                 return {
                     ...item,
                     opponentName: `Duo vs ${item.opponentGvc1?.name || 'Unknown'}`,
                     opponentUrl: item.opponentGvc1?.url || '',
-                    gvcName: `My Duo`,
+                    gvcName: gvc1 && gvc2 ? `Duo #${gvc1Id}+#${gvc2Id}` : 'My Duo',
+                    gvcUrl: gvc1?.url || '', // Use primary GVC image
                 };
             }
 
