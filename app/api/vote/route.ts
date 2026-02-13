@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { winnerId, loserId } = body;
+        const { winnerId, loserId, walletAddress } = body;
 
         if (!winnerId || !loserId) {
             return NextResponse.json({ error: 'Missing ids' }, { status: 400 });
@@ -137,6 +137,14 @@ export async function POST(request: Request) {
         });
         await kv.lpush(`history:${loserId}`, loserHistoryItem);
         await kv.ltrim(`history:${loserId}`, 0, 49);
+
+        // --- Wallet Vote Tracking (for Recommendation Engine) ---
+        if (walletAddress && typeof walletAddress === 'string') {
+            const normalizedWallet = walletAddress.toLowerCase();
+            const walletVote = JSON.stringify({ winnerId, loserId, timestamp });
+            await kv.lpush(`votes:wallet:${normalizedWallet}`, walletVote);
+            await kv.ltrim(`votes:wallet:${normalizedWallet}`, 0, 199); // Keep last 200
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

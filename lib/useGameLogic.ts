@@ -29,7 +29,7 @@ interface GameState {
 
 const getToday = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
 
-export function useGameLogic() {
+export function useGameLogic(walletAddress?: string) {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [matchup, setMatchup] = useState<[Character, Character] | null>(null);
     const [matchupQueue, setMatchupQueue] = useState<[Character, Character][]>([]);
@@ -302,7 +302,7 @@ export function useGameLogic() {
         fetch('/api/vote', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ winnerId, loserId })
+            body: JSON.stringify({ winnerId, loserId, walletAddress: walletAddress || undefined })
         }).catch(e => console.error("Failed to submit vote:", e));
 
         // Advance to next matchup immediately

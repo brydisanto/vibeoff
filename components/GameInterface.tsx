@@ -6,9 +6,11 @@ import { getIpfsUrl, checkIpfsBlocked } from '@/lib/ipfs';
 import VibeCard from './VibeCard';
 import Leaderboard from './Leaderboard';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount } from 'wagmi';
 
 export default function GameInterface() {
-    const { gameState, matchup, matchupQueue, vote, remainingVotes, canVote, loading } = useGameLogic();
+    const { address } = useAccount();
+    const { gameState, matchup, matchupQueue, vote, remainingVotes, canVote, loading } = useGameLogic(address);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [fetchedStats, setFetchedStats] = useState<Record<string, any>>({});
     const [dailyVoteAvailable, setDailyVoteAvailable] = useState(false);
