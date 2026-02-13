@@ -549,6 +549,11 @@ export default function ProfilePage() {
                             {activeTab === 'recs' && "RECOMMENDATION MACHINE"}
                             {activeTab === 'activity' && "RECENT ACTIVITY"}
                         </h2>
+                        {activeTab === 'recs' && (
+                            <p className="text-gray-500 text-sm font-mundial mt-2 tracking-wide uppercase">
+                                Curated based on your voting history
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -556,60 +561,50 @@ export default function ProfilePage() {
                 {/* Recommendation Engine */}
                 {isConnected && activeTab === 'recs' && (
                     <div className="mb-16">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
-                            <div>
-                                <h2 className="text-xl font-cooper font-bold text-[#FFE048] flex items-center gap-2">
-                                    <Flame className="animate-pulse" /> RECOMMENDED FOR YOU
-                                </h2>
-                                <p className="text-gray-500 text-sm font-mundial mt-1">
-                                    Curated based on your voting history.
-                                </p>
-                            </div>
-
-                            {/* Controls */}
-                            {recommendations && !recommendations.needsMoreVotes && (
-                                <div className="flex flex-col md:flex-row gap-4 md:items-center">
-                                    {/* Budget Slider */}
-                                    <div className="bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-2 flex flex-col gap-1 min-w-[200px]">
-                                        <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-wider">
-                                            <span>Max Price</span>
-                                            <span className="text-[#FFE048]">{maxBudget} ETH</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0.01"
-                                            max="5"
-                                            step="0.01"
-                                            value={maxBudget}
-                                            onChange={(e) => setMaxBudget(parseFloat(e.target.value))}
-                                            className="w-full accent-[#FFE048] h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                        />
+                        {/* Controls */}
+                        {recommendations && !recommendations.needsMoreVotes && (
+                            <div className="flex flex-col md:flex-row gap-4 md:items-center">
+                                {/* Budget Slider */}
+                                <div className="bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-2 flex flex-col gap-1 min-w-[200px]">
+                                    <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                        <span>Max Price</span>
+                                        <span className="text-[#FFE048]">{maxBudget} ETH</span>
                                     </div>
-
-                                    {/* Tabs */}
-                                    <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
-                                        <button
-                                            onClick={() => setActiveRecTab('listed')}
-                                            className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
-                                                ? 'bg-[#FFE048] text-black shadow-lg'
-                                                : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                                }`}
-                                        >
-                                            Listed ({recommendations.listedRecommendations?.length || 0})
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveRecTab('alltime')}
-                                            className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
-                                                ? 'bg-[#FFE048] text-black shadow-lg'
-                                                : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                                }`}
-                                        >
-                                            All Time Vibes
-                                        </button>
-                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0.01"
+                                        max="5"
+                                        step="0.01"
+                                        value={maxBudget}
+                                        onChange={(e) => setMaxBudget(parseFloat(e.target.value))}
+                                        className="w-full accent-[#FFE048] h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                    />
                                 </div>
-                            )}
-                        </div>
+
+                                {/* Tabs */}
+                                <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
+                                    <button
+                                        onClick={() => setActiveRecTab('listed')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
+                                            ? 'bg-[#FFE048] text-black shadow-lg'
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                            }`}
+                                    >
+                                        Listed ({recommendations.listedRecommendations?.length || 0})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveRecTab('alltime')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
+                                            ? 'bg-[#FFE048] text-black shadow-lg'
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                            }`}
+                                    >
+                                        All Time Vibes
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
 
                         {/* Content */}
                         {recLoading && !recommendations ? (
@@ -748,11 +743,7 @@ export default function ProfilePage() {
                 {/* My Duos Section */}
                 {isConnected && gvcs.length > 0 && activeTab === 'duos' && (
                     <div className="mb-12">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <Users className="text-[#FFE048]" size={24} />
-                                <h2 className="text-xl font-cooper font-bold text-gray-400">MY DUOS ({myDuos.length})</h2>
-                            </div>
+                        <div className="flex items-center justify-end mb-6">
                             <div className="flex gap-3">
                                 <Link href="/duos" className="px-4 md:px-6 py-3 md:py-4 bg-[#FFE048] text-black rounded-lg font-bold font-mundial text-sm uppercase tracking-wider hover:bg-[#FFE048]/90 transition-colors">
                                     PLAY DUOS →
@@ -849,9 +840,6 @@ export default function ProfilePage() {
                 {/* COLECTION TAB */}
                 {isConnected && !loading && !error && activeTab === 'collection' && (
                     <div className="space-y-8">
-                        <h2 className="text-xl font-cooper font-bold text-gray-400 mb-6 flex items-center gap-2">
-                            <LayoutGrid size={20} /> YOUR GVCs ({gvcs.length})
-                        </h2>
 
                         {gvcs.length === 0 ? (
                             <div className="bg-zinc-900 rounded-xl p-8 text-center border border-white/10">
@@ -941,9 +929,6 @@ export default function ProfilePage() {
                 {/* ACTIVITY TAB */}
                 {isConnected && !loading && !error && activeTab === 'activity' && (
                     <div className="max-w-3xl mx-auto">
-                        <h2 className="text-xl font-cooper font-bold text-gray-400 mb-6 text-center flex items-center justify-center gap-2">
-                            <Activity size={20} /> RECENT ACTIVITY
-                        </h2>
                         <div className="space-y-3">
                             {activity.map((item, i) => {
                                 const isWin = item.result === 'W';
