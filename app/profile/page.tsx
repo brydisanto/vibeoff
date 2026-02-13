@@ -561,51 +561,6 @@ export default function ProfilePage() {
                 {/* Recommendation Engine */}
                 {isConnected && activeTab === 'recs' && (
                     <div className="mb-16">
-                        {/* Controls */}
-                        {recommendations && !recommendations.needsMoreVotes && (
-                            <div className="flex flex-col md:flex-row gap-4 md:items-center">
-                                {/* Budget Slider */}
-                                <div className="bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-2 flex flex-col gap-1 min-w-[200px]">
-                                    <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-wider">
-                                        <span>Max Price</span>
-                                        <span className="text-[#FFE048]">{maxBudget} ETH</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0.01"
-                                        max="5"
-                                        step="0.01"
-                                        value={maxBudget}
-                                        onChange={(e) => setMaxBudget(parseFloat(e.target.value))}
-                                        className="w-full accent-[#FFE048] h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                    />
-                                </div>
-
-                                {/* Tabs */}
-                                <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
-                                    <button
-                                        onClick={() => setActiveRecTab('listed')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
-                                            ? 'bg-[#FFE048] text-black shadow-lg'
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        Listed ({recommendations.listedRecommendations?.length || 0})
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveRecTab('alltime')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
-                                            ? 'bg-[#FFE048] text-black shadow-lg'
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        All Time Vibes
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-
                         {/* Content */}
                         {recLoading && !recommendations ? (
                             <div className="text-center py-12 border border-white/10 rounded-2xl bg-zinc-900/30">
@@ -658,7 +613,7 @@ export default function ProfilePage() {
                                                     <div className="w-full bg-gray-800/50 rounded-full h-1 mt-2">
                                                         <div
                                                             className="bg-gray-600 group-hover:bg-[#FFE048] h-full rounded-full transition-all"
-                                                            style={{ width: `${Math.min(100, (trait.score / (recommendations.favoriteTraits?.[0].score || 1)) * 100)}%` }}
+                                                            style={{ width: `${Math.min(100, (trait.score / (recommendations?.favoriteTraits?.[0].score || 1)) * 100)}%` }}
                                                         />
                                                     </div>
                                                 </div>
@@ -669,6 +624,47 @@ export default function ProfilePage() {
 
                                 {/* Recommendations Grid */}
                                 <div className="lg:col-span-3">
+                                    {/* Controls (Moved & Right Aligned) */}
+                                    <div className="flex flex-col md:flex-row gap-4 md:items-center justify-end mb-8">
+                                        {/* Budget Slider */}
+                                        <div className="bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-2 flex flex-col gap-1 min-w-[200px]">
+                                            <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                <span>Max Price</span>
+                                                <span className="text-[#FFE048]">{maxBudget} ETH</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0.01"
+                                                max="5"
+                                                step="0.01"
+                                                value={maxBudget}
+                                                onChange={(e) => setMaxBudget(parseFloat(e.target.value))}
+                                                className="w-full accent-[#FFE048] h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                        </div>
+
+                                        {/* Tabs */}
+                                        <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
+                                            <button
+                                                onClick={() => setActiveRecTab('listed')}
+                                                className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
+                                                    ? 'bg-[#FFE048] text-black shadow-lg'
+                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                Listed ({recommendations?.listedRecommendations?.length || 0})
+                                            </button>
+                                            <button
+                                                onClick={() => setActiveRecTab('alltime')}
+                                                className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
+                                                    ? 'bg-[#FFE048] text-black shadow-lg'
+                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                All Time Vibes
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                         {(activeRecTab === 'listed' ? recommendations?.listedRecommendations : recommendations?.allTimeVibes)?.map((gvc, index) => {
                                             const isTopPick = index === 0;
