@@ -3,7 +3,7 @@ import { Character, INITIAL_CHARACTERS } from './data';
 
 const STORAGE_KEY = 'neon_solstice_state_v20';
 const SESSION_MATCHUP_KEY = 'current_matchup_ids';
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 69;
 
 interface UserState {
     lastPlayedDate: string;
@@ -108,7 +108,39 @@ export function useGameLogic(walletAddress?: string) {
         } else {
             initializeState();
         }
-    }, []);
+
+        // Fetch server-side vote count if wallet connected
+        if (walletAddress) {
+            fetch(`/api/vote?wallet=${walletAddress}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (typeof data.votesToday === 'number') {
+                        setGameState(prev => {
+                            if (!prev) return null;
+                            // Use the greater of local or server
+                            // Actually, server is authority. But if we just voted locally, 
+                            // local might be ahead before sync.
+                            // Let's trust server if it's strictly greater?
+                            // Or just trust server.
+                            const maxVotes = Math.max(prev.userState.votesToday, data.votesToday);
+
+                            if (maxVotes !== prev.userState.votesToday) {
+                                console.log(`[GameLogic] Syncing votes with server: ${prev.userState.votesToday} -> ${maxVotes}`);
+                                return {
+                                    ...prev,
+                                    userState: {
+                                        ...prev.userState,
+                                        votesToday: maxVotes
+                                    }
+                                };
+                            }
+                            return prev;
+                        });
+                    }
+                })
+                .catch(err => console.error("Failed to sync votes:", err));
+        }
+    }, [walletAddress]); // Re-run when wallet changes
 
     // Save state whenever it changes
     useEffect(() => {

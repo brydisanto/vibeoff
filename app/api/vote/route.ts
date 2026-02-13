@@ -151,4 +151,45 @@ export async function POST(request: Request) {
         console.error('Vote API Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+    // ... POST handler ...
+
+}
+
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const wallet = searchParams.get('wallet');
+
+    if (!wallet) {
+        return NextResponse.json({ votesToday: 0 });
+    }
+
+    try {
+        const normalizedWallet = wallet.toLowerCase();
+        // Fetch last 200 votes
+        const rawVotes = await kv.lrange(`votes:wallet:${normalizedWallet}`, 0, 199);
+
+        // Count votes from today (UTC)
+        // We use UTC string match YYYY-MM-DD
+        // Or just timestamp > start of day
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        let votesToday = 0;
+
+        for (const v of rawVotes) {
+            try {
+                const vote = typeof v === 'string' ? JSON.parse(v) : v;
+                if (vote.timestamp >= startOfDay) {
+                    votesToday++;
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+
+        return NextResponse.json({ votesToday });
+    } catch (error) {
+        console.error('Vote count error:', error);
+        return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    }
 }

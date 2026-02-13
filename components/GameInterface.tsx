@@ -307,10 +307,10 @@ export default function GameInterface() {
 
                                 {/* Footer - Hide keyboard hint on mobile */}
                                 <p className="hidden md:block text-gray-500 mt-12 text-sm font-mundial">
-                                    Tap a card or use ⬅️ ➡️ arrow keys • 20 votes per day
+                                    Tap a card or use ⬅️ ➡️ arrow keys • 69 votes per day
                                 </p>
                                 <p className="md:hidden text-gray-500 mt-6 text-xs font-mundial">
-                                    Tap a card to vote • 20 votes per day
+                                    Tap a card to vote • 69 votes per day
                                 </p>
                                 <p className="text-gray-600 mt-2 text-xs font-mono">
                                     vibe coded by <a href="https://x.com/brydisanto" target="_blank" rel="noopener noreferrer" className="hover:text-gvc-gold transition-colors">@brydisanto</a>
