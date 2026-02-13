@@ -196,7 +196,8 @@ export async function GET(request: NextRequest) {
 
     try {
         // 1. Fetch user's vote history
-        const rawVotes = await kv.lrange(`votes:wallet:${normalizedWallet}`, 0, 199);
+        // Fetch ALL history (up to 10,000 kept by vote API)
+        const rawVotes = await kv.lrange(`votes:wallet:${normalizedWallet}`, 0, -1);
         const votes = rawVotes.map((v: any) => {
             try {
                 return typeof v === 'string' ? JSON.parse(v) : v;

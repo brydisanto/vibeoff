@@ -143,7 +143,7 @@ export async function POST(request: Request) {
             const normalizedWallet = walletAddress.toLowerCase();
             const walletVote = JSON.stringify({ winnerId, loserId, timestamp });
             await kv.lpush(`votes:wallet:${normalizedWallet}`, walletVote);
-            await kv.ltrim(`votes:wallet:${normalizedWallet}`, 0, 199); // Keep last 200
+            await kv.ltrim(`votes:wallet:${normalizedWallet}`, 0, 9999); // Keep last 10,000 votes
         }
 
         return NextResponse.json({ success: true });
