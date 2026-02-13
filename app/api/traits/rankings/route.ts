@@ -118,7 +118,7 @@ export async function GET() {
             { keyword: 'Farmer Plants', groupName: 'Farmer & Plants' },
         ];
 
-        function getGroupedTraitName(value: string): string {
+        const getGroupedTraitName = (value: string): string => {
             for (const rule of TRAIT_GROUPS) {
                 if (value.includes(rule.keyword)) {
                     if (rule.exclude && rule.exclude.includes(value)) continue;
