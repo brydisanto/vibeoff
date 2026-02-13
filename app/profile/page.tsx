@@ -503,35 +503,55 @@ export default function ProfilePage() {
 
                 {/* Tab Navigation */}
                 {isConnected && (
-                    <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-white/10 no-scrollbar">
-                        <button
-                            onClick={() => setActiveTab('collection')}
-                            className={`px-4 py-2 rounded-lg font-bold font-mundial text-sm uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'collection' ? 'bg-white/10 text-white border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
-                        >
-                            <LayoutGrid size={16} /> Collection ({gvcs.length})
-                        </button>
-                        {gvcs.length > 0 && (
+                    <div className="flex justify-center mb-12">
+                        <div className="flex gap-4 p-1 rounded-xl bg-zinc-900/50 border border-white/10 backdrop-blur-sm overflow-x-auto no-scrollbar max-w-full">
                             <button
-                                onClick={() => setActiveTab('duos')}
-                                className={`px-4 py-2 rounded-lg font-bold font-mundial text-sm uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'duos' ? 'bg-white/10 text-white border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
+                                onClick={() => setActiveTab('collection')}
+                                className={`px-6 py-3 rounded-lg font-bold font-mundial text-sm tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'collection' ? 'bg-[#FFE048] text-black shadow-lg transform scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
-                                <Swords size={16} /> Duos ({myDuos.length})
+                                <LayoutGrid size={18} /> MY COLLECTION ({gvcs.length})
                             </button>
-                        )}
-                        <button
-                            onClick={() => setActiveTab('recs')}
-                            className={`px-4 py-2 rounded-lg font-bold font-mundial text-sm uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'recs' ? 'bg-white/10 text-white border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
-                        >
-                            <Flame size={16} className={activeTab === 'recs' ? "text-[#FFE048]" : ""} /> Recommendations
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('activity')}
-                            className={`px-4 py-2 rounded-lg font-bold font-mundial text-sm uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'activity' ? 'bg-white/10 text-white border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
-                        >
-                            <Activity size={16} /> Activity
-                        </button>
+                            {gvcs.length > 0 && (
+                                <button
+                                    onClick={() => setActiveTab('duos')}
+                                    className={`px-6 py-3 rounded-lg font-bold font-mundial text-sm tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'duos' ? 'bg-[#FFE048] text-black shadow-lg transform scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    <Swords size={18} /> MY DUOS ({myDuos.length})
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setActiveTab('recs')}
+                                className={`px-6 py-3 rounded-lg font-bold font-mundial text-sm tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'recs' ? 'bg-[#FFE048] text-black shadow-lg transform scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <Flame size={18} className={activeTab === 'recs' ? "" : ""} /> RECOMMENDATION MACHINE
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('activity')}
+                                className={`px-6 py-3 rounded-lg font-bold font-mundial text-sm tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'activity' ? 'bg-[#FFE048] text-black shadow-lg transform scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <Activity size={18} /> ACTIVITY
+                            </button>
+                        </div>
                     </div>
                 )}
+
+                {/* Section Title (Active Tab) */}
+                {isConnected && (
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl md:text-5xl font-display font-bold text-white uppercase tracking-wider inline-flex items-center gap-3">
+                            <LayoutGrid className={`w-8 h-8 md:w-10 md:h-10 text-gray-500 ${activeTab === 'collection' ? 'text-[#FFE048]' : 'hidden'}`} />
+                            <Swords className={`w-8 h-8 md:w-10 md:h-10 text-gray-500 ${activeTab === 'duos' ? 'text-[#FFE048]' : 'hidden'}`} />
+                            <Flame className={`w-8 h-8 md:w-10 md:h-10 text-gray-500 ${activeTab === 'recs' ? 'text-[#FFE048]' : 'hidden'}`} />
+                            <Activity className={`w-8 h-8 md:w-10 md:h-10 text-gray-500 ${activeTab === 'activity' ? 'text-[#FFE048]' : 'hidden'}`} />
+
+                            {activeTab === 'collection' && `YOUR GVCs (${gvcs.length})`}
+                            {activeTab === 'duos' && `YOUR DUOS (${myDuos.length})`}
+                            {activeTab === 'recs' && "RECOMMENDATION MACHINE"}
+                            {activeTab === 'activity' && "RECENT ACTIVITY"}
+                        </h2>
+                    </div>
+                )}
+
 
                 {/* Recommendation Engine */}
                 {isConnected && activeTab === 'recs' && (
@@ -599,7 +619,7 @@ export default function ProfilePage() {
                             </div>
                         ) : recommendations?.needsMoreVotes ? (
                             <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-8 text-center max-w-2xl mx-auto">
-                                <div className="text-4xl mb-4">🗳️</div>
+                                {/* Removed Emoji */}
                                 <h3 className="text-2xl font-display text-white mb-2">Unlock Recommendations</h3>
                                 <p className="text-gray-400 mb-6 font-mundial">
                                     Vote on at least <span className="text-[#FFE048] font-bold">20 matchups</span> to reveal your personalized GVC recommendations.
