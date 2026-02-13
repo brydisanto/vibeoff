@@ -270,8 +270,8 @@ export async function GET(request: NextRequest) {
         // Sort by score descending
         allGvcScores.sort((a, b) => b.score - a.score);
 
-        // 5. "All Time Vibes" — top 10 regardless of listing
-        const allTimeVibes = allGvcScores.slice(0, 10).map(item => {
+        // 5. "All Time Vibes" — top 20 regardless of listing
+        const allTimeVibes = allGvcScores.slice(0, 20).map(item => {
             const char = characterMap.get(item.id);
             return {
                 id: item.id,
@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
                 const listing = listingMap.get(item.id);
                 return listing && listing.price <= maxBudget;
             })
-            .slice(0, 10)
+            .slice(0, 20)
             .map(item => {
                 const char = characterMap.get(item.id);
                 const listing = listingMap.get(item.id)!;
