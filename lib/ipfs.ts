@@ -1,8 +1,8 @@
 export const IPFS_GATEWAYS = [
-    'https://nftstorage.link/ipfs/',    // Fastest - Cloudflare CDN backed
-    'https://dweb.link/ipfs/',           // Fast - Protocol Labs CDN
-    'https://cloudflare-ipfs.com/ipfs/', // Slower fallback
-    'https://ipfs.io/ipfs/'              // Slowest fallback
+    'https://dweb.link/ipfs/',           // Reliable
+    'https://cloudflare-ipfs.com/ipfs/', // Fast CDN
+    'https://ipfs.io/ipfs/',             // Public fallback
+    'https://gateway.pinata.cloud/ipfs/' // Extra fallback
 ];
 
 // Track whether IPFS is blocked (e.g. in UAE/Dubai)

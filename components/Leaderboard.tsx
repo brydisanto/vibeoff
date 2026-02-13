@@ -12,10 +12,21 @@ interface LeaderboardProps {
 
 type TimeFrame = 'weekly' | 'allTime';
 
+interface TraitStats {
+    value: string;
+    wins: number;
+    losses: number;
+    matches: number;
+    uniqueGvcs: number;
+    topGvcId: number;
+}
+
+
 export default function Leaderboard({ characters: _ignored, onClose }: LeaderboardProps) {
     const [leaderboardData, setLeaderboardData] = useState<Character[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'vibes' | 'collectors'>('vibes');
+    const [viewMode, setViewMode] = useState<'vibes' | 'collectors' | 'traits'>('vibes');
+    const [traitData, setTraitData] = useState<{ rankings: TraitStats[] } | null>(null);
     const [filter, setFilter] = useState<'all' | 'gold' | 'cosmic' | '1/1' | 'beard' | 'grayscale' | 'hoodie' | 'rainbow' | 'plastic' | 'female' | 'ranger' | 'nvc'>('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -37,6 +48,20 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
             .catch(err => console.error("Failed to load leaderboard", err))
             .finally(() => setLoading(false));
     }, []);
+
+    // Fetch Trait Rankings when mode is switched
+    useEffect(() => {
+        if (viewMode === 'traits' && !traitData) {
+            setLoading(true);
+            fetch('/api/traits/rankings')
+                .then(res => res.json())
+                .then(data => {
+                    setTraitData(data);
+                })
+                .catch(console.error)
+                .finally(() => setLoading(false));
+        }
+    }, [viewMode]);
 
     // Filter and Sort
     const sortedChars = [...leaderboardData]
@@ -321,6 +346,347 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
 
     const displayItems = viewMode === 'vibes' ? sortedChars : sortedCollectors;
 
+    const renderList = () => {
+        if (loading) {
+            return (
+                <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gvc-gold mb-4"></div>
+                    <div className="text-gvc-gold font-display text-xl animate-pulse">LOADING GLOBAL DATA...</div>
+                </div>
+            );
+        }
+
+        if (viewMode === 'traits') {
+            if (!traitData?.rankings) {
+                return <div className="text-center py-10 text-gray-500">Loading traits...</div>;
+            }
+
+            return traitData.rankings.slice(0, 100).map((trait, index) => {
+                const diff = trait.wins - trait.losses;
+                const winRate = trait.matches > 0 ? Math.round((trait.wins / trait.matches) * 100) : 0;
+                // Calculate maxDiff for gradient bar relative to the top item
+                const maxTraitDiff = Math.max(1, Math.abs(traitData.rankings[0].wins - traitData.rankings[0].losses));
+
+                return (
+                    <div
+                        key={trait.value}
+                        className="grid grid-cols-[24px_32px_1fr_60px_40px_40px_40px] md:grid-cols-[60px_80px_1fr_80px_80px_80px_80px] gap-1 md:gap-4 px-2 md:px-6 py-2 md:py-3 border-b border-white/5 hover:bg-white/5 transition-colors items-center text-[10px] md:text-sm"
+                    >
+                        <div className="flex justify-center">
+                            <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-display font-bold text-[10px] md:text-sm
+                                ${index === 0 ? 'bg-[#FFD700] text-black shadow-[0_0_15px_#FFD700]' : ''}
+                                ${index === 1 ? 'bg-[#C0C0C0] text-black' : ''}
+                                ${index === 2 ? 'bg-[#CD7F32] text-black' : ''}
+                                ${index > 2 ? 'text-gray-500' : ''}
+                            `}>
+                                {index + 1}
+                            </div>
+                        </div>
+
+                        {/* Top GVC Image */}
+                        <div className="relative w-8 h-8 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden border border-white/20">
+                            <Image
+                                src={getIpfsUrl(`https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/${trait.topGvcId}.jpg`, 0)}
+                                alt={`GVC #${trait.topGvcId}`}
+                                fill
+                                sizes="64px"
+                                className="object-cover"
+                                unoptimized
+                            />
+                        </div>
+
+                        <div className="font-display text-white truncate px-2 uppercase text-[10px] md:text-lg">
+                            {trait.value}
+                        </div>
+
+                        {/* +/- Gradient Bar */}
+                        <div className="relative flex items-center justify-center h-[24px] md:h-[32px] rounded-md overflow-hidden">
+                            <div
+                                className={`absolute top-0 left-0 h-full rounded-md ${diff >= 0 ? 'bg-gradient-to-r from-green-500/20 to-transparent' : 'bg-gradient-to-r from-red-500/20 to-transparent'}`}
+                                style={{ width: `${Math.min(100, (Math.abs(diff) / maxTraitDiff) * 100)}%` }}
+                            />
+                            <div className={`relative z-10 font-display font-bold text-[10px] md:text-lg ${diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                                {diff > 0 ? '+' : ''}{diff}
+                            </div>
+                        </div>
+
+                        <div className="text-center text-gvc-gold font-display text-[10px] md:text-lg leading-tight">
+                            {trait.wins} W
+                        </div>
+                        <div className="text-center text-gray-400 font-display text-[10px] md:text-lg leading-tight">
+                            {trait.losses} L
+                        </div>
+                        <div className={`text-center font-display text-[10px] md:text-lg ${winRate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                            {winRate}%
+                        </div>
+                    </div>
+                );
+            });
+        }
+
+        if (displayItems.length === 0) {
+            return (
+                <div className="text-center py-20 text-gray-500">
+                    No data found.
+                </div>
+            );
+        }
+
+        return displayItems.slice(0, 100).map((item: any, index: number) => {
+            const isTop3 = index < 3;
+
+            // Unified rendering for Vibes and Collectors
+            if (viewMode === 'collectors') {
+                const collector = item;
+                const winRate = collector.matches > 0 ? Math.round((collector.wins / collector.matches) * 100) : 0;
+                const bestVibe = collector.bestVibe;
+
+                const isExpanded = expandedCollector === collector.display;
+                const contributingGvcs = collector.gvcs.filter((g: Character) => g.allTime.wins > 0 || g.allTime.losses > 0);
+
+                return (
+                    <div key={collector.display}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            onClick={() => setExpandedCollector(isExpanded ? null : collector.display)}
+                            className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_30px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_80px_60px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''} ${isExpanded ? 'bg-white/10' : ''}`}
+                            onViewportEnter={() => {
+                                if (bestVibe && !realOwners[bestVibe.id]) {
+                                    fetchNftOwner(bestVibe.id).then(ownerData => {
+                                        if (ownerData) setRealOwners(prev => ({ ...prev, [bestVibe.id]: ownerData }));
+                                    });
+                                }
+                            }}
+                        >
+                            <div className="flex justify-center">
+                                <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-sm
+                                    ${index === 0 ? 'bg-[#FFD700] text-black shadow-[0_0_15px_#FFD700]' : ''}
+                                    ${index === 1 ? 'bg-[#C0C0C0] text-black' : ''}
+                                    ${index === 2 ? 'bg-[#CD7F32] text-black' : ''}
+                                    ${index > 2 ? 'text-gray-500' : ''}
+                                `}>
+                                    {index + 1}
+                                </div>
+                            </div>
+
+                            {/* Best Vibe Image */}
+                            <div className="relative w-8 h-8 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden border border-white/20">
+                                {bestVibe && bestVibe.url ? (
+                                    <Image
+                                        src={getIpfsUrl(bestVibe.url, 0)}
+                                        alt={bestVibe.name || 'Best Vibe'}
+                                        fill
+                                        sizes="64px"
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-800" />
+                                )}
+                            </div>
+
+                            <div className="font-mono text-[10px] md:text-sm text-white truncate pr-2 flex items-center gap-2">
+                                <span>{collector.display}</span>
+                                <span className="text-gray-500 text-[8px]">{isExpanded ? '▲' : '▼'}</span>
+                            </div>
+
+                            {/* Wins */}
+                            <div className="text-center">
+                                <div className="text-gvc-gold font-display text-[10px] md:text-lg leading-tight">{collector.wins} W</div>
+                            </div>
+
+                            {/* Losses */}
+                            <div className="text-center">
+                                <div className="text-gray-400 font-display text-[10px] md:text-lg leading-tight">{collector.losses} L</div>
+                            </div>
+
+                            {/* Win Rate - New separate column */}
+                            <div className="text-center">
+                                <div className="text-white font-display text-[10px] md:text-lg">{winRate}%</div>
+                            </div>
+
+                            {/* GVCs Count */}
+                            <div className="hidden md:block text-center text-gray-400 font-display md:text-lg leading-tight">
+                                {collector.count}
+                            </div>
+
+                            <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                                {collector.address && !collector.address.endsWith('.eth') ? (
+                                    <a
+                                        href={`https://opensea.io/${collector.address}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-500 hover:text-[#2081E2] transition-colors opacity-50 hover:opacity-100"
+                                        title="View profile on OpenSea"
+                                    >
+                                        <img
+                                            src="/opensea-v2.png"
+                                            alt="OpenSea"
+                                            width={16}
+                                            height={16}
+                                            className="rounded-full hover:opacity-80 transition-opacity md:w-6 md:h-6"
+                                        />
+                                    </a>
+                                ) : (
+                                    <span className="opacity-30">
+                                        <img
+                                            src="/opensea-v2.png"
+                                            alt="OpenSea"
+                                            width={16}
+                                            height={16}
+                                            className="rounded-full md:w-6 md:h-6 grayscale"
+                                        />
+                                    </span>
+                                )}
+                            </div>
+                        </motion.div>
+
+                        {/* Expandable GVC Breakdown */}
+                        {isExpanded && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="bg-[#0a0a0a] border-b border-white/10 px-4 md:px-12 py-3"
+                            >
+                                <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">GVCs with Stats ({contributingGvcs.length})</div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {contributingGvcs.map((gvc: Character) => (
+                                        <div key={gvc.id} className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                                            <div className="relative w-8 h-8 rounded overflow-hidden border border-white/10">
+                                                <Image
+                                                    src={getIpfsUrl(gvc.url, 2)}
+                                                    alt={gvc.name}
+                                                    fill
+                                                    sizes="32px"
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-[10px] text-white truncate">{gvc.name}</div>
+                                                <div className="text-[9px] text-gray-400">
+                                                    <span className="text-gvc-gold">{gvc.allTime.wins}W</span>
+                                                    <span className="mx-1">/</span>
+                                                    <span>{gvc.allTime.losses}L</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {contributingGvcs.length === 0 && (
+                                    <div className="text-gray-600 text-xs">No GVCs with recorded matches yet.</div>
+                                )}
+                            </motion.div>
+                        )}
+                    </div>
+                );
+            }
+
+            // VIBES MODE
+            const char = item as Character;
+            const winRate = char.allTime.matches > 0 ? Math.round((char.allTime.wins / char.allTime.matches) * 100) : 0;
+            const diff = char.allTime.wins - char.allTime.losses;
+
+            return (
+                <motion.div
+                    key={char.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_35px_24px] md:grid-cols-[60px_80px_2fr_60px_80px_80px_80px_1.5fr_40px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-3 border-b border-white/5 hover:bg-white/5 transition-colors ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''
+                        }`}
+                    onViewportEnter={() => {
+                        if (!realOwners[char.id]) {
+                            fetchNftOwner(char.id).then(ownerData => {
+                                if (ownerData) setRealOwners(prev => ({ ...prev, [char.id]: ownerData }));
+                            });
+                        }
+                    }}
+                >
+                    <div className="flex justify-center">
+                        <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-display font-bold text-[10px] md:text-sm
+                            ${index === 0 ? 'bg-[#FFD700] text-black shadow-[0_0_15px_#FFD700]' : ''}
+                            ${index === 1 ? 'bg-[#C0C0C0] text-black' : ''}
+                            ${index === 2 ? 'bg-[#CD7F32] text-black' : ''}
+                            ${index > 2 ? 'text-gray-500' : ''}
+                        `}>
+                            {index + 1}
+                        </div>
+                    </div>
+
+                    <div className="relative w-8 h-8 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden border border-white/20">
+                        {char.url ? (
+                            <Image
+                                src={getIpfsUrl(char.url, 0)}
+                                alt={char.name}
+                                fill
+                                sizes="64px"
+                                className="object-cover"
+                                unoptimized
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gray-800" />
+                        )}
+                    </div>
+
+                    <div className="md:hidden"></div>
+
+                    <div className="hidden md:flex flex-col min-w-0 pr-4">
+                        <div className="font-display text-white truncate text-sm md:text-base">{char.name}</div>
+                    </div>
+
+                    {/* +/- Visual Bar */}
+                    <div className="relative flex items-center justify-center h-[24px] md:h-[32px] rounded-md overflow-hidden">
+                        <div
+                            className={`absolute top-0 left-0 h-full rounded-md ${diff >= 0 ? 'bg-gradient-to-r from-green-500/20 to-transparent' : 'bg-gradient-to-r from-red-500/20 to-transparent'}`}
+                            style={{ width: `${Math.min(100, (Math.abs(diff) / maxDiff) * 100)}%` }}
+                        />
+                        <div className={`relative z-10 font-display font-bold text-[10px] md:text-lg ${diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                            {diff > 0 ? '+' : ''}{diff}
+                        </div>
+                    </div>
+
+                    <div className="text-center">
+                        <div className="text-gvc-gold font-display text-[10px] md:text-lg leading-tight">{char.allTime.wins} W</div>
+                    </div>
+
+                    <div className="text-center">
+                        <div className="text-gray-400 font-display text-[10px] md:text-lg leading-tight">{char.allTime.losses} L</div>
+                    </div>
+
+                    <div className="text-center">
+                        <div className={`font-display text-[10px] md:text-lg ${winRate >= 50 ? 'text-green-400' : 'text-red-400'}`}>{winRate}%</div>
+                    </div>
+
+                    <div className="hidden md:flex flex-col items-center justify-center">
+                        <div className="text-xs text-white truncate max-w-[100px]">
+                            {realOwners[char.id]?.display || formatDisplayOwner(char.owner)}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center md:justify-center" onClick={(e) => e.stopPropagation()}>
+                        <a
+                            href={`https://opensea.io/assets/ethereum/0xd0cc2b0efb168bfe1f94a948d8df70fa10257196/${char.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-500 hover:text-[#2081E2] transition-colors"
+                        >
+                            <img
+                                src="/opensea-v2.png"
+                                alt="OpenSea"
+                                width={16}
+                                height={16}
+                                className="rounded-full hover:opacity-80 transition-opacity md:w-6 md:h-6"
+                            />
+                        </a>
+                    </div>
+                </motion.div>
+            );
+        });
+    };
+
     return (
         <div className="w-full mx-auto">
             {/* Header - Responsive */}
@@ -342,12 +708,19 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                                 GVC Rankings
                             </button>
                             <button
+                                onClick={() => setViewMode('traits')}
+                                className={`px-3 md:px-6 py-2 md:py-2 rounded-full text-[10px] md:text-xs font-bold font-mundial uppercase tracking-wide transition-all active:scale-95 active:opacity-80 ${viewMode === 'traits' ? 'bg-[#FFE048] text-black' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                Trait Rankings
+                            </button>
+                            <button
                                 onClick={() => setViewMode('collectors')}
                                 className={`px-3 md:px-6 py-2 md:py-2 rounded-full text-[10px] md:text-xs font-bold font-mundial uppercase tracking-wide transition-all active:scale-95 active:opacity-80 ${viewMode === 'collectors' ? 'bg-[#FFE048] text-black' : 'text-gray-400 hover:text-white'}`}
                             >
                                 Collector Rankings
                             </button>
                         </div>
+
 
                         {/* Filter Dropdown */}
                         <div className="relative">
@@ -553,10 +926,13 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
             </div>
 
             <div className="w-full bg-[#111] border border-white/20 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
                 {/* Table Header */}
                 <div className={`grid ${viewMode === 'vibes'
                     ? 'grid-cols-[24px_32px_1fr_35px_35px_35px_35px_24px] md:grid-cols-[60px_80px_2fr_60px_80px_80px_80px_1.5fr_40px]'
-                    : 'grid-cols-[24px_32px_1fr_35px_35px_35px_30px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_80px_60px]'
+                    : viewMode === 'traits'
+                        ? 'grid-cols-[24px_32px_1fr_60px_40px_40px_40px] md:grid-cols-[60px_80px_1fr_80px_80px_80px_80px]'
+                        : 'grid-cols-[24px_32px_1fr_35px_35px_35px_30px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_80px_60px]'
                     } gap-1 md:gap-4 px-2 md:px-6 py-2 md:py-3 bg-white/5 border-b border-white/10 text-[8px] md:text-xs font-bold text-gray-400 uppercase tracking-wider`}>
 
                     {viewMode === 'vibes' ? (
@@ -572,6 +948,16 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
                             <div className="hidden md:block text-center">Collector</div>
                             <div className="text-center hidden md:block">Link</div>
                             <div className="text-center md:hidden"></div>
+                        </>
+                    ) : viewMode === 'traits' ? (
+                        <>
+                            <div className="text-center">#</div>
+                            <div className="">GVC</div>
+                            <div className="">Trait Name</div>
+                            <div className="text-center">+/-</div>
+                            <div className="text-center">Wins</div>
+                            <div className="text-center text-gray-400">Losses</div>
+                            <div className="text-center">Win%</div>
                         </>
                     ) : (
                         <>
@@ -589,291 +975,9 @@ export default function Leaderboard({ characters: _ignored, onClose }: Leaderboa
 
                 {/* List */}
                 <div className="max-h-[75vh] overflow-y-auto custom-scrollbar">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 opacity-50">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gvc-gold mb-4"></div>
-                            <div className="text-gvc-gold font-display text-xl animate-pulse">LOADING GLOBAL DATA...</div>
-                        </div>
-                    ) : displayItems.length === 0 ? (
-                        <div className="text-center py-20 text-gray-500">
-                            No data found.
-                        </div>
-                    ) : (
-                        displayItems.slice(0, 100).map((item: any, index: number) => {
-                            const isTop3 = index < 3;
-
-                            if (viewMode === 'collectors') {
-                                const collector = item;
-                                const winRate = collector.matches > 0 ? Math.round((collector.wins / collector.matches) * 100) : 0;
-                                const bestVibe = collector.bestVibe;
-                                const isExpanded = expandedCollector === collector.display;
-                                const contributingGvcs = collector.gvcs.filter((g: Character) => g.allTime.wins > 0 || g.allTime.losses > 0);
-
-                                return (
-                                    <div key={collector.display}>
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            onClick={() => setExpandedCollector(isExpanded ? null : collector.display)}
-                                            className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_30px] md:grid-cols-[60px_80px_2.5fr_80px_80px_80px_80px_60px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''} ${isExpanded ? 'bg-white/10' : ''}`}
-                                            onViewportEnter={() => {
-                                                if (bestVibe && !realOwners[bestVibe.id]) {
-                                                    fetchNftOwner(bestVibe.id).then(ownerData => {
-                                                        if (ownerData) setRealOwners(prev => ({ ...prev, [bestVibe.id]: ownerData }));
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <div className="flex justify-center">
-                                                <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-sm
-                                                    ${index === 0 ? 'bg-[#FFD700] text-black shadow-[0_0_15px_#FFD700]' : ''}
-                                                    ${index === 1 ? 'bg-[#C0C0C0] text-black' : ''}
-                                                    ${index === 2 ? 'bg-[#CD7F32] text-black' : ''}
-                                                    ${index > 2 ? 'text-gray-500' : ''}
-                                                `}>
-                                                    {index + 1}
-                                                </div>
-                                            </div>
-
-                                            {/* Best Vibe Image */}
-                                            <div className="relative w-8 h-8 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden border border-white/20">
-                                                {bestVibe && bestVibe.url ? (
-                                                    <Image
-                                                        src={getIpfsUrl(bestVibe.url, 2)}
-                                                        alt={bestVibe.name || 'Best Vibe'}
-                                                        fill
-                                                        sizes="64px"
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-800" />
-                                                )}
-                                            </div>
-
-                                            <div className="font-mono text-[10px] md:text-sm text-white truncate pr-2 flex items-center gap-2">
-                                                <span>{collector.display}</span>
-                                                <span className="text-gray-500 text-[8px]">{isExpanded ? '▲' : '▼'}</span>
-                                            </div>
-
-                                            {/* Wins */}
-                                            <div className="text-center">
-                                                <div className="text-gvc-gold font-display text-[10px] md:text-lg leading-tight">{collector.wins} W</div>
-                                            </div>
-
-                                            {/* Losses */}
-                                            <div className="text-center">
-                                                <div className="text-gray-400 font-display text-[10px] md:text-lg leading-tight">{collector.losses} L</div>
-                                            </div>
-
-                                            {/* Win Rate - New separate column */}
-                                            <div className="text-center">
-                                                <div className="text-white font-display text-[10px] md:text-lg">{winRate}%</div>
-                                            </div>
-
-                                            {/* GVCs Count */}
-                                            <div className="hidden md:block text-center text-gray-400 font-display md:text-lg leading-tight">
-                                                {collector.count}
-                                            </div>
-
-                                            <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                                                {collector.address && !collector.address.endsWith('.eth') ? (
-                                                    <a
-                                                        href={`https://opensea.io/${collector.address}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-gray-500 hover:text-[#2081E2] transition-colors opacity-50 hover:opacity-100"
-                                                        title="View profile on OpenSea"
-                                                    >
-                                                        <img
-                                                            src="/opensea-v2.png"
-                                                            alt="OpenSea"
-                                                            width={16}
-                                                            height={16}
-                                                            className="rounded-full hover:opacity-80 transition-opacity md:w-6 md:h-6"
-                                                        />
-                                                    </a>
-                                                ) : (
-                                                    <span className="opacity-30">
-                                                        <img
-                                                            src="/opensea-v2.png"
-                                                            alt="OpenSea"
-                                                            width={16}
-                                                            height={16}
-                                                            className="rounded-full md:w-6 md:h-6"
-                                                        />
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </motion.div>
-
-                                        {/* Expandable GVC Breakdown */}
-                                        {isExpanded && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="bg-[#0a0a0a] border-b border-white/10 px-4 md:px-12 py-3"
-                                            >
-                                                <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">GVCs with Stats ({contributingGvcs.length})</div>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                                    {contributingGvcs.map((gvc: Character) => (
-                                                        <div key={gvc.id} className="flex items-center gap-2 bg-white/5 rounded-lg p-2">
-                                                            <div className="relative w-8 h-8 rounded overflow-hidden border border-white/10">
-                                                                <Image
-                                                                    src={getIpfsUrl(gvc.url, 2)}
-                                                                    alt={gvc.name}
-                                                                    fill
-                                                                    sizes="32px"
-                                                                    className="object-cover"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-[10px] text-white truncate">{gvc.name}</div>
-                                                                <div className="text-[9px] text-gray-400">
-                                                                    <span className="text-gvc-gold">{gvc.allTime.wins}W</span>
-                                                                    <span className="mx-1">/</span>
-                                                                    <span>{gvc.allTime.losses}L</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {contributingGvcs.length === 0 && (
-                                                    <div className="text-gray-600 text-xs">No GVCs with recorded matches yet.</div>
-                                                )}
-                                            </motion.div>
-                                        )}
-                                    </div>
-                                );
-                            }
-
-                            // VIBES MODE
-                            const char = item as Character;
-                            try {
-                                if (!char) return null;
-                                const stats = char.allTime;
-                                const winRate = stats.matches > 0 ? Math.round((stats.wins / stats.matches) * 100) : 0;
-
-                                // Use real owner if available, otherwise default
-                                const realOwnerData = realOwners[char.id];
-
-                                // Get consistent display and link using the helper
-                                const ownerInfo = getOwnerDisplayAndLink(realOwnerData, char.owner);
-
-                                return (
-                                    <motion.div
-                                        key={char.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        className={`grid grid-cols-[24px_32px_1fr_35px_35px_35px_35px_24px] md:grid-cols-[60px_80px_2fr_60px_80px_80px_80px_1.5fr_40px] gap-1 md:gap-4 items-center px-2 md:px-6 py-2 md:py-4 border-b border-white/5 hover:bg-white/5 transition-colors group ${isTop3 ? 'bg-gradient-to-r from-gvc-gold/10 to-transparent' : ''
-                                            }`}
-                                        onViewportEnter={() => {
-                                            if (!realOwners[char.id]) {
-                                                fetchNftOwner(char.id).then(ownerData => {
-                                                    if (ownerData) setRealOwners(prev => ({ ...prev, [char.id]: ownerData }));
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        {/* Rank */}
-                                        <div className="flex justify-center">
-                                            <div className={`w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full font-bold text-[10px] md:text-sm
-                                                ${index === 0 ? 'bg-[#FFD700] text-black shadow-[0_0_15px_#FFD700]' : ''}
-                                                ${index === 1 ? 'bg-[#C0C0C0] text-black' : ''}
-                                                ${index === 2 ? 'bg-[#CD7F32] text-black' : ''}
-                                                ${index > 2 ? 'text-gray-500' : ''}
-                                            `}>
-                                                {index + 1}
-                                            </div>
-                                        </div>
-
-                                        {/* Image Preview */}
-                                        <div className="relative w-7 h-7 md:w-16 md:h-16 rounded-md md:rounded-lg overflow-hidden border border-white/20 group-hover:border-gvc-gold transition-colors">
-                                            {char.url ? (
-                                                <Image
-                                                    src={getIpfsUrl(char.url, 2)}
-                                                    alt={char.name || 'Vibe'}
-                                                    fill
-                                                    sizes="64px"
-                                                    className="object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full bg-gray-800" />
-                                            )}
-                                        </div>
-
-                                        {/* Name */}
-                                        <div className="font-cooper text-[9px] md:text-base text-white truncate pr-4 md:pr-10">
-                                            {char.name || 'Unknown'}
-                                        </div>
-
-                                        {/* +/- with gradient bar */}
-                                        <div className="relative flex items-center justify-center h-[24px] md:h-[32px] rounded-md overflow-hidden">
-                                            <div
-                                                className={`absolute top-0 left-0 h-full rounded-md ${stats.wins - stats.losses >= 0 ? 'bg-gradient-to-r from-green-500/20 to-transparent' : 'bg-gradient-to-r from-red-500/20 to-transparent'}`}
-                                                style={{ width: `${Math.min(100, (Math.abs(stats.wins - stats.losses) / maxDiff) * 100)}%` }}
-                                            />
-                                            <div className={`relative z-10 font-display text-[10px] md:text-lg font-bold ${stats.wins - stats.losses > 0 ? 'text-green-400' : stats.wins - stats.losses < 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                                                {stats.wins - stats.losses > 0 ? '+' : ''}{stats.wins - stats.losses}
-                                            </div>
-                                        </div>
-
-                                        {/* Wins */}
-                                        <div className="text-center">
-                                            <div className="text-gvc-gold font-display text-[10px] md:text-lg leading-tight">{stats.wins} W</div>
-                                        </div>
-
-                                        {/* Losses */}
-                                        <div className="text-center">
-                                            <div className="text-gray-400 font-display text-[10px] md:text-lg leading-tight">{stats.losses} L</div>
-                                        </div>
-
-                                        {/* Win Rate */}
-                                        <div className="text-center">
-                                            <div className="text-white font-display text-[10px] md:text-lg">{winRate}%</div>
-                                        </div>
-
-                                        {/* Owner - Hidden on Mobile */}
-                                        <div className="hidden md:block text-center font-mono text-xs text-gray-500 truncate hover:text-[#2081E2]">
-                                            {ownerInfo.link ? (
-                                                <a href={`https://opensea.io/${ownerInfo.link}`} target="_blank" rel="noopener noreferrer" title="View profile on OpenSea">
-                                                    {ownerInfo.display}
-                                                </a>
-                                            ) : (
-                                                <span>{ownerInfo.display}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Link */}
-                                        <div className="flex justify-center">
-                                            <a
-                                                href={`https://opensea.io/assets/ethereum/0xB8Ea78fcaCEf50d41375E44E6814ebbA36Bb33c4/${char.id}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-gray-500 hover:text-[#2081E2] transition-colors opacity-50 hover:opacity-100 p-0 md:p-2"
-                                                title="View on OpenSea"
-                                            >
-                                                <img
-                                                    src="/opensea-v2.png"
-                                                    alt="OpenSea"
-                                                    width={16}
-                                                    height={16}
-                                                    className="rounded-full hover:opacity-80 transition-opacity md:w-6 md:h-6"
-                                                />
-                                            </a>
-                                        </div>
-                                    </motion.div>
-                                );
-                            } catch (e) {
-                                console.error("Render error for char", char?.id, e);
-                                return null;
-                            }
-                        })
-                    )}
+                    {renderList()}
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
