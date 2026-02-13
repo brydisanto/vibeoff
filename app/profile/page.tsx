@@ -201,9 +201,9 @@ export default function ProfilePage() {
     const duoIds = myDuos.map(d => d.id).join(',');
 
     useEffect(() => {
-        if (!gvcIds && !duoIds) return;
+        if (!gvcIds) return;
 
-        fetch(`/api/profile/activity?ids=${gvcIds}&duoIds=${duoIds}`)
+        fetch(`/api/profile/activity?ids=${gvcIds}`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                 }
             })
             .catch(err => console.error('Failed to fetch activity:', err));
-    }, [gvcIds, duoIds]);
+    }, [gvcIds]);
 
     // Calculate Collector Rank
     useEffect(() => {
