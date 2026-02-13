@@ -277,7 +277,7 @@ export async function GET(request: NextRequest) {
                 name: char?.name || `GVC #${item.id}`,
                 url: char?.url || '',
                 score: Math.round(item.score * 10) / 10,
-                matchingTraits: [...new Set(item.matchingTraits)].slice(0, 3),
+                matchingTraits: Array.from(new Set(item.matchingTraits)).slice(0, 3),
                 opensea: `https://opensea.io/assets/ethereum/${CONTRACT_ADDRESS}/${item.id}`
             };
         });
@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
                     name: char?.name || `GVC #${item.id}`,
                     url: char?.url || '',
                     score: Math.round(item.score * 10) / 10,
-                    matchingTraits: [...new Set(item.matchingTraits)].slice(0, 3),
+                    matchingTraits: Array.from(new Set(item.matchingTraits)).slice(0, 3),
                     price: Math.round(listing.price * 10000) / 10000,
                     opensea: listing.link
                 };
