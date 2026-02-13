@@ -97,7 +97,7 @@ export default function ProfilePage() {
     // Recommendations state
     const [recommendations, setRecommendations] = useState<RecommendationData | null>(null);
     const [recLoading, setRecLoading] = useState(false);
-    const [maxBudget, setMaxBudget] = useState(0.5); // Default 0.5 ETH
+    const [maxBudget, setMaxBudget] = useState(3); // Default 3 ETH
     const [activeRecTab, setActiveRecTab] = useState<'listed' | 'alltime'>('listed');
     const [activeTab, setActiveTab] = useState<'collection' | 'duos' | 'recs' | 'activity'>('collection');
 
