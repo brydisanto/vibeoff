@@ -140,7 +140,7 @@ export async function GET() {
         let bestOneOfOneDiff = -Infinity;
         let bestOneOfOneId = 1400;
         const oneOfOneEntry: TraitStats = {
-            value: '1/1s',
+            value: '1-of-1s',
             wins: 0,
             losses: 0,
             matches: 0,
@@ -165,9 +165,9 @@ export async function GET() {
                 oneOfOneEntry.topGvcId = numId;
             }
         });
-        traitStats['1/1s'] = oneOfOneEntry;
-        bestGvcPerTrait['1/1s'] = { id: bestOneOfOneId, diff: bestOneOfOneDiff };
-        seenGvcsPerGroup['1/1s'] = new Set(ONE_OF_ONE_IDS);
+        traitStats['1-of-1s'] = oneOfOneEntry;
+        bestGvcPerTrait['1-of-1s'] = { id: bestOneOfOneId, diff: bestOneOfOneDiff };
+        seenGvcsPerGroup['1-of-1s'] = new Set(ONE_OF_ONE_IDS);
 
         topIds.forEach((idStr, index) => {
             const id = String(idStr);
