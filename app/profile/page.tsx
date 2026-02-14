@@ -710,12 +710,17 @@ export default function ProfilePage() {
                                                                 ))}
                                                             </div>
                                                         </div>
-                                                        {'price' in gvc && (
-                                                            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-mono group-hover:text-gray-300 transition-colors">
-                                                                <span>Purchase on OpenSea</span>
-                                                                <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                                            </div>
-                                                        )}
+                                                        <div className="mt-4 pt-4 border-t border-white/5">
+                                                            {activeRecTab === 'listed' ? (
+                                                                <div className="w-full bg-[#FFE048] text-black text-center py-2.5 rounded-lg font-bold font-mundial uppercase tracking-wider text-xs hover:bg-[#FFE048]/90 transition-colors shadow-lg">
+                                                                    BUY ON OPENSEA
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-full bg-white/10 text-white text-center py-2.5 rounded-lg font-bold font-mundial uppercase tracking-wider text-xs hover:bg-white/20 transition-colors border border-white/10">
+                                                                    PLACE OFFER
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </a>
                                             );
