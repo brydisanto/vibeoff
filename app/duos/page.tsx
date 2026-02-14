@@ -635,7 +635,7 @@ export default function DuosPage() {
                                                 </div>
                                             </motion.div>
                                         </div>
-                                        )}
+
                                     </div>
                                 ) : error ? (
                                     <div className="text-center py-12">
