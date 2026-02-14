@@ -50,7 +50,7 @@ export default function DuosPage() {
     const [matchup, setMatchup] = useState<[DuoMatchup, DuoMatchup] | null>(null);
     const [loading, setLoading] = useState(true);
     const [voting, setVoting] = useState(false);
-    const [remainingVotes, setRemainingVotes] = useState(20);
+    const [remainingVotes, setRemainingVotes] = useState(30);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboard, setLeaderboard] = useState<LeaderboardDuo[]>([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
@@ -60,35 +60,46 @@ export default function DuosPage() {
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [duoOwners, setDuoOwners] = useState<Record<string, { display: string; link: string | null }>>({});
-    const [countdown, setCountdown] = useState<string | null>(null);
 
-    const fetchMatchup = async () => {
+    const [matchupQueue, setMatchupQueue] = useState<[DuoMatchup, DuoMatchup][]>([]);
+    const [fetchingQueue, setFetchingQueue] = useState(false);
+    const fetchMatchup = async (addToQueue = false) => {
+        if (addToQueue && fetchingQueue) return;
+        if (addToQueue) setFetchingQueue(true);
+
         try {
-            setLoading(true);
+            if (!addToQueue) setLoading(true);
             setError(null);
+
             const res = await fetch('/api/duos/matchup', {
                 headers: { 'x-duos-session-id': getSessionId() }
             });
             const data = await res.json();
+
             if (data.matchup) {
-                setMatchup(data.matchup);
+                if (addToQueue) {
+                    setMatchupQueue(prev => [...prev, data.matchup]);
+                } else {
+                    setMatchup(data.matchup);
+                }
                 setDuoCount(data.totalDuos);
-                // Update remaining votes from matchup response (1 vote consumed per matchup fetch)
                 if (typeof data.remainingVotes === 'number') {
                     setRemainingVotes(data.remainingVotes);
                 }
             } else {
-                setError(data.message || 'Not enough Duos');
-                setDuoCount(data.totalDuos || data.duoCount || 0);
-                // Also update remaining votes if provided (e.g., when out of votes)
+                if (!addToQueue) {
+                    setError(data.message || 'Not enough Duos');
+                    setDuoCount(data.totalDuos || data.duoCount || 0);
+                }
                 if (typeof data.remainingVotes === 'number') {
                     setRemainingVotes(data.remainingVotes);
                 }
             }
         } catch {
-            setError('Failed to load matchup');
+            if (!addToQueue) setError('Failed to load matchup');
         } finally {
-            setLoading(false);
+            if (!addToQueue) setLoading(false);
+            if (addToQueue) setFetchingQueue(false);
         }
     };
 
@@ -98,7 +109,7 @@ export default function DuosPage() {
                 headers: { 'x-duos-session-id': getSessionId() }
             });
             const data = await res.json();
-            setRemainingVotes(data.remainingVotes ?? 20);
+            setRemainingVotes(data.remainingVotes ?? 30);
         } catch {
             console.error('Failed to fetch votes');
         }
@@ -122,6 +133,13 @@ export default function DuosPage() {
         fetchVotes();
     }, []);
 
+    // Keep queue populated
+    useEffect(() => {
+        if (matchup && matchupQueue.length < 2 && !fetchingQueue) {
+            fetchMatchup(true);
+        }
+    }, [matchup, matchupQueue.length, fetchingQueue]);
+
     useEffect(() => {
         if (showLeaderboard) {
             fetchLeaderboard(leaderboardMode);
@@ -129,7 +147,7 @@ export default function DuosPage() {
     }, [showLeaderboard, leaderboardMode]);
 
     const handleVote = useCallback(async (winnerId: string, loserId: string) => {
-        if (voting || remainingVotes <= 0 || isTransitioning || countdown) return;
+        if (voting || remainingVotes <= 0 || isTransitioning) return;
         setVoting(true);
         setLastWinner(winnerId);
 
@@ -145,20 +163,18 @@ export default function DuosPage() {
             const data = await res.json();
             if (data.success) {
                 setRemainingVotes(data.remainingVotes);
-                // Start countdown sequence
                 setLastWinner(null);
                 setIsTransitioning(true);
                 setMatchup(null);
 
-                // 3-2-1 DUO! countdown
-                setCountdown('3');
-                setTimeout(() => setCountdown('2'), 600);
-                setTimeout(() => setCountdown('1'), 1200);
-                setTimeout(() => setCountdown('DUO!'), 1800);
-                setTimeout(() => {
-                    setCountdown(null);
+                // Immediate fetch for next matchup
+                if (matchupQueue.length > 0) {
+                    const nextMatchup = matchupQueue[0];
+                    setMatchupQueue(prev => prev.slice(1)); // Remove from queue
+                    setMatchup(nextMatchup);
+                } else {
                     fetchMatchup();
-                }, 2400);
+                }
             }
         } catch {
             console.error('Vote failed');
@@ -166,7 +182,7 @@ export default function DuosPage() {
         } finally {
             setVoting(false);
         }
-    }, [voting, remainingVotes, isTransitioning, countdown]);
+    }, [voting, remainingVotes, isTransitioning, matchupQueue]);
 
     const canVote = remainingVotes > 0;
 
@@ -308,6 +324,18 @@ export default function DuosPage() {
     return (
         <main className="min-h-screen bg-black text-white bg-[url('/grid.svg')] bg-center">
             <div className="w-full min-h-screen p-4 md:p-8 flex flex-col items-center">
+                {/* Image Preloader */}
+                <div className="hidden" aria-hidden="true">
+                    {matchupQueue.map((pair, i) => (
+                        <div key={`preload-${i}-${pair[0].id}-${pair[1].id}`}>
+                            <Image src={pair[0].gvc1.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
+                            <Image src={pair[0].gvc2.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
+                            <Image src={pair[1].gvc1.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
+                            <Image src={pair[1].gvc2.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
+                        </div>
+                    ))}
+                </div>
+
                 {/* Main Content Container */}
                 <div className="w-full max-w-[1000px] flex flex-col">
                     {/* Title */}
@@ -545,87 +573,68 @@ export default function DuosPage() {
                                 {(loading || isTransitioning) ? (
                                     /* Loading State - Countdown or Skeleton Cards */
                                     <div className="relative w-full">
-                                        {/* Countdown Overlay */}
-                                        {countdown ? (
+                                        <div className="grid grid-cols-[1fr_auto_1fr] gap-2 md:gap-8 items-center w-full">
+                                            {/* Left Skeleton Card with Gold Spinners */}
                                             <motion.div
-                                                key={countdown}
-                                                initial={{ scale: 0.5, opacity: 0 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                exit={{ scale: 1.5, opacity: 0 }}
-                                                className="flex items-center justify-center py-40"
+                                                className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
                                             >
-                                                <motion.span
-                                                    initial={{ scale: 0.8 }}
-                                                    animate={{ scale: [1, 1.1, 1] }}
-                                                    transition={{ duration: 0.4 }}
-                                                    className={`text-6xl md:text-9xl font-cooper ${countdown === 'DUO!' ? 'text-gvc-gold' : 'text-white'}`}
-                                                >
-                                                    {countdown}
-                                                </motion.span>
+                                                {/* Duo Images - Vertical Stack */}
+                                                <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
+                                                    {/* Top GVC */}
+                                                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                                                        <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                    </div>
+                                                    {/* Bottom GVC */}
+                                                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                                                        <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Details Section */}
+                                                <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
+                                                    <div className="flex flex-col min-w-0 pr-2">
+                                                        <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
+                                                        <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
+                                                    </div>
+                                                    <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
+                                                        <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
+                                                    </div>
+                                                </div>
                                             </motion.div>
-                                        ) : (
-                                            <div className="grid grid-cols-[1fr_auto_1fr] gap-2 md:gap-8 items-center w-full">
-                                                {/* Left Skeleton Card with Gold Spinners */}
-                                                <motion.div
-                                                    className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
-                                                >
-                                                    {/* Duo Images - Vertical Stack */}
-                                                    <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
-                                                        {/* Top GVC */}
-                                                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
-                                                        </div>
-                                                        {/* Bottom GVC */}
-                                                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
-                                                        </div>
-                                                    </div>
 
-                                                    {/* Details Section */}
-                                                    <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
-                                                        <div className="flex flex-col min-w-0 pr-2">
-                                                            <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
-                                                            <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
-                                                        </div>
-                                                        <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
-                                                            <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
+                                            {/* VS Badge */}
+                                            <motion.div className="flex items-center justify-center">
+                                                <span className="text-2xl md:text-4xl font-display italic text-gvc-gold/50">VS</span>
+                                            </motion.div>
 
-                                                {/* VS Badge */}
-                                                <motion.div className="flex items-center justify-center">
-                                                    <span className="text-2xl md:text-4xl font-display italic text-gvc-gold/50">VS</span>
-                                                </motion.div>
-
-                                                {/* Right Skeleton Card with Gold Spinners */}
-                                                <motion.div
-                                                    className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
-                                                >
-                                                    {/* Duo Images - Vertical Stack */}
-                                                    <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
-                                                        {/* Top GVC */}
-                                                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
-                                                        </div>
-                                                        {/* Bottom GVC */}
-                                                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                                                            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
-                                                        </div>
+                                            {/* Right Skeleton Card with Gold Spinners */}
+                                            <motion.div
+                                                className="flex flex-col h-full bg-[#1A1A1A] rounded-lg md:rounded-2xl overflow-hidden border border-white/10"
+                                            >
+                                                {/* Duo Images - Vertical Stack */}
+                                                <div className="w-full p-3 md:p-4 flex flex-col gap-2 md:gap-3">
+                                                    {/* Top GVC */}
+                                                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                                                        <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                     </div>
-
-                                                    {/* Details Section */}
-                                                    <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
-                                                        <div className="flex flex-col min-w-0 pr-2">
-                                                            <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
-                                                            <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
-                                                        </div>
-                                                        <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
-                                                            <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
-                                                        </div>
+                                                    {/* Bottom GVC */}
+                                                    <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                                                        <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-gvc-gold/30 border-t-gvc-gold rounded-full animate-spin" />
                                                     </div>
-                                                </motion.div>
-                                            </div>
+                                                </div>
+
+                                                {/* Details Section */}
+                                                <div className="flex justify-between items-center p-3 md:p-5 bg-[#1A1A1A] border-t border-white/5 flex-grow">
+                                                    <div className="flex flex-col min-w-0 pr-2">
+                                                        <div className="h-7 md:h-8 w-40 md:w-52 rounded mb-0.5 md:mb-1 bg-white/10 animate-pulse" />
+                                                        <div className="h-4 md:h-5 w-24 md:w-32 rounded bg-white/5 animate-pulse" />
+                                                    </div>
+                                                    <div className="shrink-0 bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
+                                                        <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-white/10 animate-pulse" />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </div>
                                         )}
                                     </div>
                                 ) : error ? (

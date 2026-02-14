@@ -15,7 +15,7 @@ const kv = new Redis({
 
 export const dynamic = 'force-dynamic';
 
-const DAILY_VOTE_LIMIT = 20;
+const DAILY_VOTE_LIMIT = 30;
 const K_FACTOR = 32;
 
 function getDateKey(): string {

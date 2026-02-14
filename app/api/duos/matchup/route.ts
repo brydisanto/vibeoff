@@ -17,7 +17,7 @@ const kv = new Redis({
     token: process.env.KV_REST_API_TOKEN!
 });
 
-const DAILY_VOTE_LIMIT = 20;
+const DAILY_VOTE_LIMIT = 30;
 
 function getDateKey(): string {
     return new Date().toISOString().split('T')[0];

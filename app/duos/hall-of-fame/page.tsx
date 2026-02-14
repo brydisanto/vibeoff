@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getIpfsUrl } from '@/lib/ipfs';
 import { getOwnerDisplayAndLink } from '@/lib/opensea';
 
 interface DuoData {
@@ -129,20 +128,22 @@ export default function HallOfDuosPage() {
                 <div className="grid grid-cols-2 gap-2 p-3 bg-black relative z-10 pointer-events-none">
                     <div className="relative aspect-square rounded-lg overflow-hidden">
                         <Image
-                            src={getIpfsUrl(duo.gvc1.url, 3)}
+                            src={duo.gvc1.url}
                             alt={duo.gvc1.name}
                             fill
                             className="object-cover"
                             sizes="150px"
+                            unoptimized
                         />
                     </div>
                     <div className="relative aspect-square rounded-lg overflow-hidden">
                         <Image
-                            src={getIpfsUrl(duo.gvc2.url, 3)}
+                            src={duo.gvc2.url}
                             alt={duo.gvc2.name}
                             fill
                             className="object-cover"
                             sizes="150px"
+                            unoptimized
                         />
                     </div>
                 </div>
@@ -261,20 +262,22 @@ export default function HallOfDuosPage() {
                                     <div className="grid grid-cols-2 gap-2 p-3 bg-black relative z-10 pointer-events-none">
                                         <div className="relative aspect-square rounded-lg overflow-hidden">
                                             <Image
-                                                src={getIpfsUrl(duo.gvc1.url, 3)}
+                                                src={duo.gvc1.url}
                                                 alt={duo.gvc1.name}
                                                 fill
                                                 className="object-cover"
                                                 sizes="100px"
+                                                unoptimized
                                             />
                                         </div>
                                         <div className="relative aspect-square rounded-lg overflow-hidden">
                                             <Image
-                                                src={getIpfsUrl(duo.gvc2.url, 3)}
+                                                src={duo.gvc2.url}
                                                 alt={duo.gvc2.name}
                                                 fill
                                                 className="object-cover"
                                                 sizes="100px"
+                                                unoptimized
                                             />
                                         </div>
                                     </div>
