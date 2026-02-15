@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // Fetch all Duo IDs (reverse order for newest first)
-        const duoIds = await kv.zrevrange('duos:all', 0, -1);
+        const duoIds = await kv.zrange('duos:all', 0, -1, { rev: true });
 
         if (!duoIds.length) {
             return NextResponse.json({ duos: [] });
