@@ -111,17 +111,34 @@ export function useGameLogic(walletAddress?: string) {
 
         // Fetch server-side vote count if wallet connected
         if (walletAddress) {
+            // 1. SYNC local anonymous votes to server
+            try {
+                const localVotes = JSON.parse(localStorage.getItem('my_recent_votes') || '[]');
+                if (localVotes.length > 0) {
+                    fetch('/api/vote/sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ walletAddress, votes: localVotes })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.added > 0) {
+                                console.log(`[GameLogic] Synced ${data.added} offline votes to server.`);
+                            }
+                        })
+                        .catch(e => console.error("Failed to sync votes:", e));
+                }
+            } catch (e) {
+                console.error("Failed to read local votes for sync", e);
+            }
+
+            // 2. Fetch server-side vote count
             fetch(`/api/vote?wallet=${walletAddress}`)
                 .then(res => res.json())
                 .then(data => {
                     if (typeof data.votesToday === 'number') {
                         setGameState(prev => {
                             if (!prev) return null;
-                            // Use the greater of local or server
-                            // Actually, server is authority. But if we just voted locally, 
-                            // local might be ahead before sync.
-                            // Let's trust server if it's strictly greater?
-                            // Or just trust server.
                             const maxVotes = Math.max(prev.userState.votesToday, data.votesToday);
 
                             if (maxVotes !== prev.userState.votesToday) {
@@ -326,7 +343,7 @@ export function useGameLogic(walletAddress?: string) {
             const recent = JSON.parse(localStorage.getItem('my_recent_votes') || '[]');
             const newVote = { winnerId, loserId, timestamp: Date.now() };
             // Keep last 20
-            const updated = [newVote, ...recent].slice(0, 20);
+            const updated = [newVote, ...recent].slice(0, 1000);
             localStorage.setItem('my_recent_votes', JSON.stringify(updated));
         } catch (e) { console.error("Failed to save local vote", e); }
 
