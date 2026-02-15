@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, RefreshCw, Search, ShieldAlert } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Search, ShieldAlert, Lock } from 'lucide-react';
 
 interface Duo {
     id: string;
@@ -18,8 +18,14 @@ interface Duo {
 }
 
 export default function AdminDuosPage() {
+    // Auth State
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [authError, setAuthError] = useState(false);
+
+    // Data State
     const [duos, setDuos] = useState<Duo[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -30,11 +36,44 @@ export default function AdminDuosPage() {
     const [creating, setCreating] = useState(false);
     const [createMsg, setCreateMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const fetchDuos = async () => {
+    // Check session on mount
+    useEffect(() => {
+        const stored = sessionStorage.getItem('admin_password');
+        if (stored) {
+            setPasswordInput(stored);
+            setIsAuthenticated(true);
+            fetchDuos(stored);
+        }
+    }, []);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsAuthenticated(true);
+        sessionStorage.setItem('admin_password', passwordInput);
+        fetchDuos(passwordInput);
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        setPasswordInput('');
+        sessionStorage.removeItem('admin_password');
+        setDuos([]);
+    };
+
+    const fetchDuos = async (pwd: string) => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/admin/duos');
+            const res = await fetch('/api/admin/duos', {
+                headers: { 'x-admin-password': pwd }
+            });
+
+            if (res.status === 401) {
+                handleLogout();
+                setAuthError(true);
+                return;
+            }
+
             const data = await res.json();
             if (data.duos) {
                 setDuos(data.duos);
@@ -48,22 +87,26 @@ export default function AdminDuosPage() {
         }
     };
 
-    useEffect(() => {
-        fetchDuos();
-    }, []);
-
     const handleDelete = async (duoId: string) => {
         if (!confirm(`Are you sure you want to delete Duo ${duoId}? This cannot be undone.`)) return;
 
         try {
             const res = await fetch('/api/admin/duos/delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-password': passwordInput
+                },
                 body: JSON.stringify({ duoId })
             });
+
+            if (res.status === 401) {
+                handleLogout();
+                return;
+            }
+
             const data = await res.json();
             if (data.success) {
-                // Optimistic remove
                 setDuos(prev => prev.filter(d => d.id !== duoId));
             } else {
                 alert('Failed to delete: ' + data.error);
@@ -81,20 +124,29 @@ export default function AdminDuosPage() {
         try {
             const res = await fetch('/api/admin/duos/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-password': passwordInput
+                },
                 body: JSON.stringify({
                     walletAddress: createWallet,
                     gvc1Id: parseInt(gvc1),
                     gvc2Id: parseInt(gvc2)
                 })
             });
+
+            if (res.status === 401) {
+                handleLogout();
+                return;
+            }
+
             const data = await res.json();
 
             if (data.success) {
                 setCreateMsg({ type: 'success', text: 'Duo created successfully!' });
                 setGvc1('');
                 setGvc2('');
-                fetchDuos(); // Refresh list
+                fetchDuos(passwordInput);
             } else {
                 setCreateMsg({ type: 'error', text: data.error || 'Failed to create' });
             }
@@ -105,7 +157,41 @@ export default function AdminDuosPage() {
         }
     };
 
-    // Filter
+    // LOGIN SCREEN
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center p-4">
+                <div className="bg-[#1a1a1a] p-8 rounded-xl border border-white/20 w-full max-w-md text-center">
+                    <Lock size={48} className="mx-auto mb-6 text-gvc-gold" />
+                    <h1 className="text-2xl font-bold mb-2">Admin Access</h1>
+                    <p className="text-gray-500 mb-6 text-sm">Please enter the password to continue.</p>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <input
+                            type="password"
+                            value={passwordInput}
+                            onChange={e => {
+                                setPasswordInput(e.target.value);
+                                setAuthError(false);
+                            }}
+                            placeholder="Password"
+                            className="w-full bg-black/50 border border-white/20 rounded p-3 text-center focus:border-gvc-gold outline-none"
+                            autoFocus
+                        />
+                        {authError && <div className="text-red-500 text-xs">Incorrect password</div>}
+                        <button
+                            type="submit"
+                            className="w-full bg-gvc-gold text-black font-bold py-3 rounded hover:bg-[#FFE058] transition-colors"
+                        >
+                            Unlock Panel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    // MAIN DASHBOARD
     const filteredDuos = duos.filter(d =>
         d.owner?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         d.id.includes(searchTerm) ||
@@ -121,8 +207,13 @@ export default function AdminDuosPage() {
                         <ShieldAlert className="text-red-500" size={32} />
                         <h1 className="text-3xl font-bold font-cooper tracking-wide">DUOS ADMIN</h1>
                     </div>
-                    <div className="text-xs text-gray-500">
-                        {duos.length} Total Pairs
+                    <div className="flex items-center gap-4">
+                        <div className="text-xs text-gray-500">
+                            {duos.length} Total Pairs
+                        </div>
+                        <button onClick={handleLogout} className="text-xs text-red-500 hover:text-red-400">
+                            Logout
+                        </button>
                     </div>
                 </header>
 
@@ -203,7 +294,7 @@ export default function AdminDuosPage() {
                                         className="pl-9 pr-4 py-2 bg-[#1a1a1a] border border-white/20 rounded text-sm focus:border-white/50 outline-none w-64"
                                     />
                                 </div>
-                                <button onClick={fetchDuos} className="p-2 bg-[#1a1a1a] border border-white/20 rounded hover:bg-white/10 transition-colors">
+                                <button onClick={() => fetchDuos(passwordInput)} className="p-2 bg-[#1a1a1a] border border-white/20 rounded hover:bg-white/10 transition-colors">
                                     <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                                 </button>
                             </div>

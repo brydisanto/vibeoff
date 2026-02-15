@@ -7,9 +7,15 @@ const kv = new Redis({
     token: process.env.KV_REST_API_TOKEN!
 });
 
+import { checkAdminAuth } from '@/lib/auth';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+    if (!checkAdminAuth()) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         // Fetch all Duo IDs (reverse order for newest first)
         const duoIds = await kv.zrange('duos:all', 0, -1, { rev: true });

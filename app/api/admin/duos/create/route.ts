@@ -8,9 +8,15 @@ const kv = new Redis({
     token: process.env.KV_REST_API_TOKEN!
 });
 
+import { checkAdminAuth } from '@/lib/auth';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+    if (!checkAdminAuth()) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
         const { walletAddress, gvc1Id, gvc2Id } = body;
