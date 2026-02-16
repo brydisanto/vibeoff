@@ -635,7 +635,7 @@ export default function ProfilePage() {
                                             <input
                                                 type="range"
                                                 min="0.01"
-                                                max="5"
+                                                max="10"
                                                 step="0.01"
                                                 value={maxBudget}
                                                 onChange={(e) => setMaxBudget(parseFloat(e.target.value))}
