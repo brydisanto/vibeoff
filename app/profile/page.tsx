@@ -686,7 +686,7 @@ export default function ProfilePage() {
                                                             </div>
                                                         )}
                                                         <img src={gvc.url} alt={gvc.name} className="w-full aspect-square object-cover" />
-                                                        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-[#FFE048] z-10 font-mono" style={{ background: 'linear-gradient(135deg, rgba(255,224,72,0.15), rgba(255,140,50,0.15))', border: '1px solid rgba(255,224,72,0.3)', boxShadow: '0 0 10px rgba(255,224,72,0.15)' }}>
+                                                        <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[11px] font-bold text-[#FFE048] z-10 font-mono backdrop-blur-sm" style={{ background: 'linear-gradient(135deg, rgba(20,15,0,0.85), rgba(30,20,5,0.85))', border: '1px solid rgba(255,224,72,0.35)', boxShadow: '0 0 10px rgba(255,224,72,0.15)' }}>
                                                             {gvc.score > 0 ? '+' : ''}{gvc.score} MATCH
                                                         </div>
                                                         {/* Price Badge (Listed Only) */}
