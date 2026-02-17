@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Badge Design Options</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 48px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .option {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            transition: border-color 0.3s;
+        }
+        .option:hover { border-color: #FFE048; }
+        .option-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #666;
+            font-weight: 700;
+        }
+        .option-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #FFE048;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .option-desc {
+            font-size: 0.75rem;
+            color: #777;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 280px;
+        }
+        .badge-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ── OPTION A: Current Style (Pill) ── */
+        .badge-a {
+            background: rgba(0,0,0,0.7);
+            color: #3ddc84;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(61,220,132,0.3);
+        }
+
+        /* ── OPTION B: Gradient Glow Pill ── */
+        .badge-b {
+            background: linear-gradient(135deg, rgba(255,224,72,0.15), rgba(255,140,50,0.15));
+            color: #FFE048;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,224,72,0.3);
+            box-shadow: 0 0 12px rgba(255,224,72,0.15);
+            letter-spacing: 0.5px;
+        }
+
+        /* ── OPTION C: Percentage Bar ── */
+        .badge-c-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 120px;
+        }
+        .badge-c-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            font-weight: 700;
+        }
+        .badge-c-label span:last-child {
+            color: #FFE048;
+            font-family: 'Space Mono', monospace;
+        }
+        .badge-c-bar {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .badge-c-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFE048, #ff8c32);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* ── OPTION D: Circular Score ── */
+        .badge-d {
+            position: relative;
+            width: 56px;
+            height: 56px;
+        }
+        .badge-d svg {
+            transform: rotate(-90deg);
+        }
+        .badge-d-bg {
+            fill: none;
+            stroke: #222;
+            stroke-width: 3;
+        }
+        .badge-d-fill {
+            fill: none;
+            stroke: #FFE048;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-dasharray: 150.8;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        .badge-d-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #FFE048;
+        }
+        .badge-d-subtext {
+            font-size: 0.55rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* ── OPTION E: Fire Meter ── */
+        .badge-e {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,80,50,0.1);
+            border: 1px solid rgba(255,100,50,0.25);
+            border-radius: 8px;
+            padding: 5px 12px;
+        }
+        .badge-e-icon { font-size: 1rem; }
+        .badge-e-score {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ff6432;
+        }
+        .badge-e-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        /* ── OPTION F: Star Rating ── */
+        .badge-f {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .badge-f-stars {
+            display: flex;
+            gap: 2px;
+            font-size: 0.9rem;
+        }
+        .badge-f-star-on { color: #FFE048; }
+        .badge-f-star-off { color: #333; }
+        .badge-f-score {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        /* ── OPTION G: Minimal Tag ── */
+        .badge-g {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #FFE048;
+            text-shadow: 0 0 8px rgba(255,224,72,0.3);
+        }
+
+        /* ── OPTION H: Diamond Tier ── */
+        .badge-h {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(120,80,255,0.15), rgba(200,120,255,0.1));
+            border: 1px solid rgba(160,100,255,0.3);
+            border-radius: 8px;
+            padding: 5px 12px;
+        }
+        .badge-h-icon { font-size: 0.85rem; }
+        .badge-h-score {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #f0abfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── OPTION I: Neon Outline ── */
+        .badge-i {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #00ffaa;
+            padding: 5px 14px;
+            border-radius: 6px;
+            border: 1.5px solid #00ffaa;
+            box-shadow: 0 0 8px rgba(0,255,170,0.2), inset 0 0 8px rgba(0,255,170,0.05);
+            text-shadow: 0 0 6px rgba(0,255,170,0.4);
+        }
+
+        .divider {
+            grid-column: 1 / -1;
+            border: none;
+            border-top: 1px solid #1a1a1a;
+            margin: 8px 0;
+        }
+
+        /* Mock card preview */
+        .card-preview {
+            position: relative;
+            width: 180px;
+            height: 220px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+        .card-preview .badge-position {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Match Badge Designs</h1>
+    <p class="subtitle">Exploring alternative styles for the +# Match indicator</p>
+
+    <div class="grid">
+
+        <!-- Option A: Current -->
+        <div class="option">
+            <span class="option-label">Option A</span>
+            <span class="option-name">Current (Green Pill)</span>
+            <div class="badge-row">
+                <span class="badge-a">+2.4 MATCH</span>
+                <span class="badge-a">+1.1 MATCH</span>
+                <span class="badge-a">+0.8 MATCH</span>
+            </div>
+            <p class="option-desc">The existing design. Functional but doesn't feel premium. Green doesn't match the yellow palette.</p>
+        </div>
+
+        <!-- Option B: Gradient Glow -->
+        <div class="option">
+            <span class="option-label">Option B</span>
+            <span class="option-name">Gold Glow Pill</span>
+            <div class="badge-row">
+                <span class="badge-b">+2.4 MATCH</span>
+                <span class="badge-b">+1.1 MATCH</span>
+                <span class="badge-b">+0.8 MATCH</span>
+            </div>
+            <p class="option-desc">On-brand gold with a subtle glow. Rounded pill feels premium. Cohesive with #1 CHOICE badge.</p>
+        </div>
+
+        <!-- Option C: Progress Bar -->
+        <div class="option">
+            <span class="option-label">Option C</span>
+            <span class="option-name">Match Meter</span>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="badge-c-wrap">
+                    <div class="badge-c-label"><span>Match</span><span>92%</span></div>
+                    <div class="badge-c-bar"><div class="badge-c-fill" style="width: 92%"></div></div>
+                </div>
+                <div class="badge-c-wrap">
+                    <div class="badge-c-label"><span>Match</span><span>67%</span></div>
+                    <div class="badge-c-bar"><div class="badge-c-fill" style="width: 67%"></div></div>
+                </div>
+                <div class="badge-c-wrap">
+                    <div class="badge-c-label"><span>Match</span><span>41%</span></div>
+                    <div class="badge-c-bar"><div class="badge-c-fill" style="width: 41%"></div></div>
+                </div>
+            </div>
+            <p class="option-desc">Converts raw score to a percentage. Visually intuitive — users instantly understand relative strength.</p>
+        </div>
+
+        <!-- Option D: Circular Score -->
+        <div class="option">
+            <span class="option-label">Option D</span>
+            <span class="option-name">Radial Ring</span>
+            <div class="badge-row">
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                    <div class="badge-d">
+                        <svg width="56" height="56" viewBox="0 0 56 56">
+                            <circle class="badge-d-bg" cx="28" cy="28" r="24"/>
+                            <circle class="badge-d-fill" cx="28" cy="28" r="24" style="stroke-dashoffset: 15.08"/>
+                        </svg>
+                        <span class="badge-d-text">92</span>
+                    </div>
+                    <span class="badge-d-subtext">Match</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                    <div class="badge-d">
+                        <svg width="56" height="56" viewBox="0 0 56 56">
+                            <circle class="badge-d-bg" cx="28" cy="28" r="24"/>
+                            <circle class="badge-d-fill" cx="28" cy="28" r="24" style="stroke-dashoffset: 49.76"/>
+                        </svg>
+                        <span class="badge-d-text">67</span>
+                    </div>
+                    <span class="badge-d-subtext">Match</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                    <div class="badge-d">
+                        <svg width="56" height="56" viewBox="0 0 56 56">
+                            <circle class="badge-d-bg" cx="28" cy="28" r="24"/>
+                            <circle class="badge-d-fill" cx="28" cy="28" r="24" style="stroke-dashoffset: 88.97"/>
+                        </svg>
+                        <span class="badge-d-text">41</span>
+                    </div>
+                    <span class="badge-d-subtext">Match</span>
+                </div>
+            </div>
+            <p class="option-desc">Compact circular gauge. Visually rich but takes more space. Could overlay on card corner.</p>
+        </div>
+
+        <!-- Option E: Fire Meter -->
+        <div class="option">
+            <span class="option-label">Option E</span>
+            <span class="option-name">Vibe Score</span>
+            <div class="badge-row">
+                <div class="badge-e">
+                    <span class="badge-e-icon">🔥</span>
+                    <div>
+                        <div class="badge-e-score">92%</div>
+                        <div class="badge-e-label">Vibe Match</div>
+                    </div>
+                </div>
+                <div class="badge-e">
+                    <span class="badge-e-icon">✨</span>
+                    <div>
+                        <div class="badge-e-score">67%</div>
+                        <div class="badge-e-label">Vibe Match</div>
+                    </div>
+                </div>
+            </div>
+            <p class="option-desc">Emoji-led badge with "Vibe Match" label. On-brand with the playful GVC tone. Fire = hot match.</p>
+        </div>
+
+        <!-- Option F: Star Rating -->
+        <div class="option">
+            <span class="option-label">Option F</span>
+            <span class="option-name">Star Rating</span>
+            <div class="badge-row">
+                <div class="badge-f">
+                    <div class="badge-f-stars">
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                    </div>
+                    <span class="badge-f-score">92%</span>
+                </div>
+                <div class="badge-f">
+                    <div class="badge-f-stars">
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-off">★</span>
+                        <span class="badge-f-star-off">★</span>
+                    </div>
+                    <span class="badge-f-score">67%</span>
+                </div>
+                <div class="badge-f">
+                    <div class="badge-f-stars">
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-on">★</span>
+                        <span class="badge-f-star-off">★</span>
+                        <span class="badge-f-star-off">★</span>
+                        <span class="badge-f-star-off">★</span>
+                    </div>
+                    <span class="badge-f-score">41%</span>
+                </div>
+            </div>
+            <p class="option-desc">Classic 5-star rating. Universally understood but might feel too "review-like" for this context.</p>
+        </div>
+
+        <!-- Option G: Minimal -->
+        <div class="option">
+            <span class="option-label">Option G</span>
+            <span class="option-name">Ultra Minimal</span>
+            <div class="badge-row">
+                <span class="badge-g">92% match</span>
+                <span class="badge-g">67% match</span>
+                <span class="badge-g">41% match</span>
+            </div>
+            <p class="option-desc">No container, just text with a subtle glow. Cleanest look, lets the card art breathe.</p>
+        </div>
+
+        <!-- Option H: Diamond Tier -->
+        <div class="option">
+            <span class="option-label">Option H</span>
+            <span class="option-name">Diamond Tier</span>
+            <div class="badge-row">
+                <div class="badge-h">
+                    <span class="badge-h-icon">💎</span>
+                    <span class="badge-h-score">92% MATCH</span>
+                </div>
+                <div class="badge-h">
+                    <span class="badge-h-icon">✦</span>
+                    <span class="badge-h-score">67% MATCH</span>
+                </div>
+            </div>
+            <p class="option-desc">Purple gradient with tier icons. Premium feel, implies rarity. Could tier: 💎 90%+, ✦ 70%+, • 50%+</p>
+        </div>
+
+        <!-- Option I: Neon Outline -->
+        <div class="option">
+            <span class="option-label">Option I</span>
+            <span class="option-name">Neon Outline</span>
+            <div class="badge-row">
+                <span class="badge-i">92% MATCH</span>
+                <span class="badge-i">67% MATCH</span>
+                <span class="badge-i">41% MATCH</span>
+            </div>
+            <p class="option-desc">Cyberpunk-inspired neon border with glow. Matches the "Neon Solstice" project name. Bold and distinctive.</p>
+        </div>
+
+    </div>
+
+    <div style="max-width: 1400px; margin: 60px auto 0; padding: 32px; background: #111; border: 1px solid #222; border-radius: 16px;">
+        <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; color: #FFE048;">💡 Recommendation</h2>
+        <p style="color: #aaa; font-size: 0.85rem; line-height: 1.7;">
+            <strong style="color: #fff;">Option B (Gold Glow Pill)</strong> or <strong style="color: #fff;">Option C (Match Meter)</strong> are the strongest choices.
+            Option B is a drop-in upgrade — same footprint, on-brand gold, premium glow.
+            Option C converts the abstract score to an intuitive percentage, making it instantly understandable.
+            Both pair well with the existing #1 CHOICE badge and dark card aesthetic.
+        </p>
+    </div>
+
+</body>
+</html>

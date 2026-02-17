@@ -686,8 +686,7 @@ export default function ProfilePage() {
                                                             </div>
                                                         )}
                                                         <img src={gvc.url} alt={gvc.name} className="w-full aspect-square object-cover" />
-                                                        {/* Compatibility Score Badge */}
-                                                        <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-[#FFE048]/30 text-xs font-bold text-[#FFE048] z-10 font-mono shadow-lg">
+                                                        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-[#FFE048] z-10 font-mono" style={{ background: 'linear-gradient(135deg, rgba(255,224,72,0.15), rgba(255,140,50,0.15))', border: '1px solid rgba(255,224,72,0.3)', boxShadow: '0 0 10px rgba(255,224,72,0.15)' }}>
                                                             {gvc.score > 0 ? '+' : ''}{gvc.score} MATCH
                                                         </div>
                                                         {/* Price Badge (Listed Only) */}
