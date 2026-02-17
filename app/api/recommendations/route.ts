@@ -215,34 +215,66 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // 2. Build trait preference profile
-        const traitScores: Record<string, number> = {};
+        // 2. Build trait preference profile with appearance tracking
+        const traitRawScores: Record<string, number> = {};
         const traitVoteCounts: Record<string, { voted: number; rejected: number }> = {};
+        const traitAppearances: Record<string, number> = {}; // Total times trait appeared in any matchup
 
         for (const vote of votes) {
             const winnerTraits = getGvcTraits(vote.winnerId);
             const loserTraits = getGvcTraits(vote.loserId);
 
-            // Winner traits get +1
+            // Winner traits: +1 raw score, track appearance
             for (const trait of winnerTraits) {
-                traitScores[trait] = (traitScores[trait] || 0) + 1;
+                traitRawScores[trait] = (traitRawScores[trait] || 0) + 1;
+                traitAppearances[trait] = (traitAppearances[trait] || 0) + 1;
                 if (!traitVoteCounts[trait]) traitVoteCounts[trait] = { voted: 0, rejected: 0 };
                 traitVoteCounts[trait].voted++;
             }
 
-            // Loser traits get -0.5
+            // Loser traits: -0.5 raw score, track appearance
             for (const trait of loserTraits) {
-                traitScores[trait] = (traitScores[trait] || 0) - 0.5;
+                traitRawScores[trait] = (traitRawScores[trait] || 0) - 0.5;
+                traitAppearances[trait] = (traitAppearances[trait] || 0) + 1;
                 if (!traitVoteCounts[trait]) traitVoteCounts[trait] = { voted: 0, rejected: 0 };
                 traitVoteCounts[trait].rejected++;
             }
         }
 
-        // 3. Get user's owned GVCs (to exclude from recommendations)
+        // 3. Apply Bayesian-smoothed normalization
+        // This accounts for trait rarity: rare traits with strong signal rank higher
+        const BAYESIAN_K = 10; // Confidence parameter — how many observations before we trust the data
+
+        // Calculate observed rate per trait (score per appearance)
+        const traitObservedRates: Record<string, number> = {};
+        for (const trait of Object.keys(traitRawScores)) {
+            const appearances = traitAppearances[trait] || 1;
+            traitObservedRates[trait] = traitRawScores[trait] / appearances;
+        }
+
+        // Calculate prior rate (global average observed rate across all traits)
+        const allRates = Object.values(traitObservedRates);
+        const priorRate = allRates.length > 0
+            ? allRates.reduce((sum, r) => sum + r, 0) / allRates.length
+            : 0;
+
+        // Compute Bayesian-smoothed scores
+        // Formula: smoothed = (n * observedRate + k * priorRate) / (n + k)
+        // Where n = appearances, k = confidence parameter
+        const traitScores: Record<string, number> = {};
+        for (const trait of Object.keys(traitRawScores)) {
+            const n = traitAppearances[trait] || 1;
+            const observed = traitObservedRates[trait];
+            traitScores[trait] = (n * observed + BAYESIAN_K * priorRate) / (n + BAYESIAN_K);
+        }
+
+        console.log(`[Recommendations] Bayesian smoothing: prior=${priorRate.toFixed(3)}, k=${BAYESIAN_K}, traits=${Object.keys(traitScores).length}`);
+
+        // 4. Get user's owned GVCs (to exclude from recommendations)
         const ownedGvcsRaw = await kv.smembers(`owner:${normalizedWallet}`);
         const ownedGvcIds = new Set(ownedGvcsRaw.map((id: any) => Number(id)));
 
-        // 4. Score ALL GVCs for "All Time Vibes"
+        // 5. Score ALL GVCs using Bayesian-smoothed trait scores
         const allGvcScores: { id: number; score: number; matchingTraits: string[] }[] = [];
 
         for (let id = 1; id <= 6969; id++) {
@@ -255,9 +287,9 @@ export async function GET(request: NextRequest) {
             const matchingTraits: string[] = [];
 
             for (const trait of traits) {
-                const traitScore = traitScores[trait] || 0;
-                if (traitScore > 0) {
-                    score += traitScore;
+                const smoothedScore = traitScores[trait];
+                if (smoothedScore !== undefined && smoothedScore > 0) {
+                    score += smoothedScore;
                     matchingTraits.push(trait);
                 }
             }
