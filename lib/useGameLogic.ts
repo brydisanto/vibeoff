@@ -139,7 +139,8 @@ export function useGameLogic(walletAddress?: string) {
                     if (typeof data.votesToday === 'number') {
                         setGameState(prev => {
                             if (!prev) return null;
-                            const maxVotes = Math.max(prev.userState.votesToday, data.votesToday);
+                            // Cap at DAILY_LIMIT to prevent negative remaining display
+                            const maxVotes = Math.min(Math.max(prev.userState.votesToday, data.votesToday), DAILY_LIMIT);
 
                             if (maxVotes !== prev.userState.votesToday) {
                                 console.log(`[GameLogic] Syncing votes with server: ${prev.userState.votesToday} -> ${maxVotes}`);
@@ -358,7 +359,7 @@ export function useGameLogic(walletAddress?: string) {
         advanceQueue();
     };
 
-    const remainingVotes = gameState ? DAILY_LIMIT - gameState.userState.votesToday : DAILY_LIMIT;
+    const remainingVotes = gameState ? Math.max(0, DAILY_LIMIT - gameState.userState.votesToday) : DAILY_LIMIT;
     const canVote = gameState ? gameState.userState.votesToday < DAILY_LIMIT : false;
 
     return {
