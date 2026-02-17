@@ -113,8 +113,8 @@ const fetchActiveListings = async (): Promise<{ tokenId: number; price: number; 
         const listings: { tokenId: number; price: number; link: string }[] = [];
         let next: string | null = null;
 
-        // Paginate through all listings
-        for (let page = 0; page < 10; page++) {
+        // Paginate through all listings (up to 30 pages / 3000 items to ensure deep coverage)
+        for (let page = 0; page < 30; page++) {
             const requestUrl: string = next ||
                 `https://api.opensea.io/api/v2/listings/collection/${GVC_COLLECTION_SLUG}/all?limit=100`;
 
