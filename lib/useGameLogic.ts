@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Character, INITIAL_CHARACTERS } from './data';
 
-const STORAGE_KEY = 'neon_solstice_state_v20';
+const STORAGE_KEY = 'neon_solstice_state_v24';
 const SESSION_MATCHUP_KEY = 'current_matchup_ids';
-const DAILY_LIMIT = 69;
+const DEFAULT_DAILY_LIMIT = 69;
 
 interface UserState {
     lastPlayedDate: string;
-    votesToday: number;
+    votesToday: number; // tracked in React state only, NOT persisted to localStorage
 }
 
 // Sparse storage for stats: Map<CharacterID, [wins, losses, matches]>
@@ -33,6 +33,8 @@ export function useGameLogic(walletAddress?: string) {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [matchup, setMatchup] = useState<[Character, Character] | null>(null);
     const [matchupQueue, setMatchupQueue] = useState<[Character, Character][]>([]);
+    const [dailyLimit, setDailyLimit] = useState(DEFAULT_DAILY_LIMIT);
+    const [votesLoaded, setVotesLoaded] = useState(false);
 
     // Weights for weighted random selection (inverse of match count)
     const weightsRef = useRef<Record<number, number> | null>(null);
@@ -77,10 +79,9 @@ export function useGameLogic(walletAddress?: string) {
             try {
                 const parsed: StoredData = JSON.parse(saved);
 
-                // Reset user state if new day
+                // Reset day tracking if new day
                 if (parsed.userState.lastPlayedDate !== today) {
-                    parsed.userState = { lastPlayedDate: today, votesToday: 0 };
-                    // Clear session matchup on new day
+                    parsed.userState.lastPlayedDate = today;
                     sessionStorage.removeItem(SESSION_MATCHUP_KEY);
                 }
 
@@ -97,9 +98,10 @@ export function useGameLogic(walletAddress?: string) {
                     return char;
                 });
 
+                // Always initialize votesToday to 0; server will overwrite on fetch
                 setGameState({
                     characters: hydratedCharacters,
-                    userState: parsed.userState
+                    userState: { lastPlayedDate: today, votesToday: 0 }
                 });
             } catch (e) {
                 console.error("Failed to parse saved state", e);
@@ -111,6 +113,7 @@ export function useGameLogic(walletAddress?: string) {
 
         // Fetch server-side vote count if wallet connected
         if (walletAddress) {
+            setVotesLoaded(false); // Reset while fetching
             // 1. SYNC local anonymous votes to server
             try {
                 const localVotes = JSON.parse(localStorage.getItem('my_recent_votes') || '[]');
@@ -132,29 +135,40 @@ export function useGameLogic(walletAddress?: string) {
                 console.error("Failed to read local votes for sync", e);
             }
 
-            // 2. Fetch server-side vote count
-            fetch(`/api/vote?wallet=${walletAddress}`)
+            // 2. Check if refresh penalty applies (pending matchup in sessionStorage)
+            const pendingMatchup = sessionStorage.getItem(SESSION_MATCHUP_KEY);
+            const shouldSkip = !!pendingMatchup;
+            if (pendingMatchup) {
+                console.log(`[GameLogic] Refresh penalty: pending matchup found, will cost 1 vote`);
+                sessionStorage.removeItem(SESSION_MATCHUP_KEY);
+            }
+
+            // 3. Fetch server-side vote count (with atomic skip if applicable)
+            const url = `/api/vote?wallet=${walletAddress}${shouldSkip ? '&skip=1' : ''}`;
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     if (typeof data.votesToday === 'number') {
                         setGameState(prev => {
                             if (!prev) return null;
-                            // Cap at DAILY_LIMIT to prevent negative remaining display
-                            const maxVotes = Math.min(Math.max(prev.userState.votesToday, data.votesToday), DAILY_LIMIT);
-
-                            if (maxVotes !== prev.userState.votesToday) {
-                                console.log(`[GameLogic] Syncing votes with server: ${prev.userState.votesToday} -> ${maxVotes}`);
+                            if (data.votesToday !== prev.userState.votesToday) {
+                                console.log(`[GameLogic] Syncing votes with server: ${prev.userState.votesToday} -> ${data.votesToday}`);
                                 return {
                                     ...prev,
                                     userState: {
                                         ...prev.userState,
-                                        votesToday: maxVotes
+                                        votesToday: data.votesToday
                                     }
                                 };
                             }
                             return prev;
                         });
                     }
+                    // Sync dynamic daily limit from server
+                    if (typeof data.dailyLimit === 'number') {
+                        setDailyLimit(data.dailyLimit);
+                    }
+                    setVotesLoaded(true);
                 })
                 .catch(err => console.error("Failed to sync votes:", err));
         }
@@ -178,7 +192,8 @@ export function useGameLogic(walletAddress?: string) {
 
         const dataToSave: StoredData = {
             stats: sparseStats,
-            userState: gameState.userState
+            // Persist lastPlayedDate but NOT votesToday (server is source of truth)
+            userState: { lastPlayedDate: gameState.userState.lastPlayedDate, votesToday: 0 }
         };
 
         try {
@@ -283,37 +298,9 @@ export function useGameLogic(walletAddress?: string) {
         });
     };
 
-    // Check for refresh-skipping on load
+    // Generate matchup on load
     useEffect(() => {
         if (!gameState) return;
-
-        // Check if user had a matchup in session that they didn't vote on
-        const savedMatchup = sessionStorage.getItem(SESSION_MATCHUP_KEY);
-        if (savedMatchup && !matchup) {
-            // User refreshed without voting - this costs 1 vote
-            try {
-                const [id1, id2] = JSON.parse(savedMatchup);
-                console.log(`Refresh detected with pending matchup: ${id1} vs ${id2}. Costing 1 vote.`);
-
-                // Only penalize if they have votes remaining
-                if (gameState.userState.votesToday < DAILY_LIMIT) {
-                    setGameState(prev => {
-                        if (!prev) return null;
-                        return {
-                            ...prev,
-                            userState: {
-                                ...prev.userState,
-                                votesToday: prev.userState.votesToday + 1
-                            }
-                        };
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to parse saved matchup:', e);
-            }
-            // Clear the old matchup
-            sessionStorage.removeItem(SESSION_MATCHUP_KEY);
-        }
 
         // Generate new matchup
         if (!matchup) {
@@ -348,19 +335,46 @@ export function useGameLogic(walletAddress?: string) {
             localStorage.setItem('my_recent_votes', JSON.stringify(updated));
         } catch (e) { console.error("Failed to save local vote", e); }
 
-        // Send to API (Fire and forget)
+        // Send to API — keepalive ensures delivery even during page refresh
         fetch('/api/vote', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ winnerId, loserId, walletAddress: walletAddress || undefined })
+            body: JSON.stringify({ winnerId, loserId, walletAddress: walletAddress || undefined }),
+            keepalive: true,
         }).catch(e => console.error("Failed to submit vote:", e));
 
         // Advance to next matchup immediately
         advanceQueue();
     };
 
-    const remainingVotes = gameState ? Math.max(0, DAILY_LIMIT - gameState.userState.votesToday) : DAILY_LIMIT;
-    const canVote = gameState ? gameState.userState.votesToday < DAILY_LIMIT : false;
+    const remainingVotes = !votesLoaded ? null : (gameState ? Math.max(0, dailyLimit - gameState.userState.votesToday) : DEFAULT_DAILY_LIMIT);
+    const canVote = gameState ? gameState.userState.votesToday < dailyLimit : false;
+
+    // Refresh limit and vote count from server (e.g. after purchasing bonus votes)
+    const refreshLimit = async () => {
+        if (!walletAddress) return;
+        try {
+            const res = await fetch(`/api/vote?wallet=${walletAddress}`);
+            const data = await res.json();
+            if (typeof data.dailyLimit === 'number') {
+                setDailyLimit(data.dailyLimit);
+            }
+            if (typeof data.votesToday === 'number') {
+                setGameState(prev => {
+                    if (!prev) return null;
+                    return {
+                        ...prev,
+                        userState: {
+                            ...prev.userState,
+                            votesToday: data.votesToday
+                        }
+                    };
+                });
+            }
+        } catch (e) {
+            console.error('Failed to refresh limit:', e);
+        }
+    };
 
     return {
         gameState,
@@ -369,6 +383,8 @@ export function useGameLogic(walletAddress?: string) {
         vote,
         remainingVotes,
         canVote,
+        dailyLimit,
+        refreshLimit,
         loading: !gameState
     };
 }

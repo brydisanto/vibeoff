@@ -17,7 +17,7 @@ const kv = new Redis({
     token: process.env.KV_REST_API_TOKEN!
 });
 
-const DAILY_VOTE_LIMIT = 30;
+const BASE_DAILY_VOTE_LIMIT = 30;
 
 function getDateKey(): string {
     return new Date().toISOString().split('T')[0];
@@ -76,17 +76,42 @@ export async function GET(request: NextRequest) {
         // ============================================================
         // OPTIMIZATION 2: Non-blocking writes (don't await)
         // ============================================================
-        // Calculate refresh penalty
-        const refreshPenalty = (sessionId && lastAction === 'fetch') ? 1 : 0;
+        // Check if we should skip penalty (e.g. background fetch or wallet connect)
+        const skipPenalty = request.nextUrl.searchParams.get('skipPenalty') === 'true';
 
-        // Fire-and-forget writes (don't block response)
+        // Rate limit penalty to max once per 3 seconds (fixes Strict Mode double-count)
+        const penaltyLockKey = `penalty_lock:${sessionId}`;
+        const isLocked = await kv.get(penaltyLockKey);
+
+        // Calculate refresh penalty
+        // Only penalize if:
+        // 1. Not skipping (background/wallet)
+        // 2. Session exists
+        // 3. Last action was 'fetch' (consecutive fetch = refresh)
+        // 4. Not rate limited (locked)
+        const shouldPenalize = !skipPenalty && sessionId && lastAction === 'fetch' && !isLocked;
+        const refreshPenalty = shouldPenalize ? 1 : 0;
+
+        // Fire-and-forget writes
         if (stateKey) {
-            kv.set(stateKey, 'fetch', { ex: 60 * 60 * 24 }); // Don't await
+            kv.set(stateKey, 'fetch', { ex: 60 * 60 * 24 });
         }
+
         if (refreshPenalty > 0) {
-            kv.incr(voteKey); // Don't await
-            kv.expire(voteKey, 60 * 60 * 24); // Don't await
+            kv.incr(voteKey);
+            kv.expire(voteKey, 60 * 60 * 24);
+            // Set lock to prevent double-penalty in immediate succession
+            kv.set(penaltyLockKey, '1', { ex: 3 });
         }
+
+        // Check for wallet address to get bonus votes
+        const wallet = request.nextUrl.searchParams.get('wallet');
+        let bonusVotes = 0;
+        if (wallet) {
+            const bonusKey = `user:${wallet.toLowerCase()}:bonus:duo:${dateKey}`;
+            bonusVotes = (await kv.get(bonusKey) as number) || 0;
+        }
+        const DAILY_VOTE_LIMIT = BASE_DAILY_VOTE_LIMIT + bonusVotes;
 
         // Adjust vote count for penalty that will be applied
         const effectiveVotes = currentVotes + refreshPenalty;
@@ -96,7 +121,7 @@ export async function GET(request: NextRequest) {
         if (effectiveVotes >= DAILY_VOTE_LIMIT) {
             const response = NextResponse.json({
                 error: 'No votes remaining',
-                message: 'Daily vote limit reached. Come back tomorrow!',
+                message: 'Daily vote limit reached.',
                 remainingVotes: 0,
                 totalDuos: allDuoIds.length
             }, { status: 429 });

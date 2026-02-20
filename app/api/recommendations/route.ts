@@ -32,7 +32,7 @@ const TRAIT_GROUPS: { keyword: string; groupName: string; exclude?: string[] }[]
     { keyword: 'Flat Top', groupName: 'Flat Tops' },
     { keyword: 'Manbun', groupName: 'Manbuns' },
     { keyword: 'Classic', groupName: 'Classic Hair' },
-    { keyword: 'Ballcap', groupName: 'Ballcaps', exclude: ['Ballcap Forward Black Superrare'] },
+    { keyword: 'Ballcap', groupName: 'Ballcaps', exclude: ['Ballcap Forward Black SuperRare'] },
     { keyword: 'Short', groupName: 'Short Hair' },
     { keyword: 'Afro', groupName: 'Afros' },
     { keyword: 'Moto Helmet', groupName: 'Moto Helmets' },

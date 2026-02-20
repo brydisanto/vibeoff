@@ -15,7 +15,7 @@ const kv = new Redis({
 
 export const dynamic = 'force-dynamic';
 
-const DAILY_VOTE_LIMIT = 30;
+const BASE_DAILY_VOTE_LIMIT = 30;
 const K_FACTOR = 32;
 
 function getDateKey(): string {
@@ -35,26 +35,38 @@ function calculateExpectedScore(ratingA: number, ratingB: number): number {
     return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
         const cookieStore = cookies();
         let deviceId = cookieStore.get('duos_device_id')?.value;
+        const wallet = request.nextUrl.searchParams.get('wallet');
+
+        // Fetch bonus votes if wallet provided
+        let bonusVotes = 0;
+        if (wallet) {
+            const dateKey = getDateKey();
+            const bonusKey = `user:${wallet.toLowerCase()}:bonus:duo:${dateKey}`;
+            bonusVotes = (await kv.get(bonusKey) as number) || 0;
+        }
+        const dailyLimit = BASE_DAILY_VOTE_LIMIT + bonusVotes;
 
         if (!deviceId) {
             return NextResponse.json({
-                remainingVotes: DAILY_VOTE_LIMIT,
-                totalVotes: DAILY_VOTE_LIMIT
+                remainingVotes: dailyLimit,
+                totalVotes: dailyLimit,
+                dailyLimit
             });
         }
 
         const dateKey = getDateKey();
         const voteCount = await kv.get(`duos:votes:${dateKey}:${deviceId}`) as number || 0;
-        const remaining = Math.max(0, DAILY_VOTE_LIMIT - voteCount);
+        const remaining = Math.max(0, dailyLimit - voteCount);
 
         return NextResponse.json({
             remainingVotes: remaining,
-            totalVotes: DAILY_VOTE_LIMIT,
-            votesToday: voteCount
+            totalVotes: dailyLimit,
+            votesToday: voteCount,
+            dailyLimit
         });
 
     } catch (error) {
@@ -83,14 +95,26 @@ export async function POST(request: NextRequest) {
         const dateKey = getDateKey();
         const voteKey = `duos:votes:${dateKey}:${deviceId}`;
 
-        // Check vote limit
-        const currentVotes = await kv.get(voteKey) as number || 0;
-        if (currentVotes >= DAILY_VOTE_LIMIT) {
+        // Determine dynamic limit based on wallet if provided
+        const walletAddress = body.walletAddress;
+        let bonusVotes = 0;
+        if (walletAddress && typeof walletAddress === 'string') {
+            const bDateKey = getDateKey();
+            const bonusKey = `user:${walletAddress.toLowerCase()}:bonus:duo:${bDateKey}`;
+            bonusVotes = (await kv.get(bonusKey) as number) || 0;
+        }
+        const dynamicLimit = BASE_DAILY_VOTE_LIMIT + bonusVotes;
+
+        // Check vote limit (Atomic)
+        const newVoteCount = await kv.incr(voteKey);
+        if (newVoteCount > dynamicLimit) {
+            await kv.decr(voteKey); // Rollback
             return NextResponse.json({
                 error: 'Daily vote limit reached',
                 remainingVotes: 0
             }, { status: 429 });
         }
+        await kv.expire(voteKey, 60 * 60 * 24);
 
         // Get current Duo stats
         const [winnerData, loserData] = await Promise.all([
@@ -99,6 +123,7 @@ export async function POST(request: NextRequest) {
         ]) as [{ wins?: number; losses?: number; matches?: number; elo?: number } | null, { wins?: number; losses?: number; matches?: number; elo?: number } | null];
 
         if (!winnerData || !loserData) {
+            await kv.decr(voteKey); // Rollback vote consumption on bad request
             return NextResponse.json({ error: 'Invalid Duo IDs' }, { status: 400 });
         }
 
@@ -178,15 +203,14 @@ export async function POST(request: NextRequest) {
         ]);
 
         // Increment vote count
-        const newVoteCount = await kv.incr(voteKey);
-        await kv.expire(voteKey, 60 * 60 * 24);
+        // (Vote was already atomically incremented at the start of the request)
 
         // Get current vote count for response
         const response = NextResponse.json({
             success: true,
             winner: { id: winnerId, newElo: newWinnerElo },
             loser: { id: loserId, newElo: newLoserElo },
-            remainingVotes: Math.max(0, DAILY_VOTE_LIMIT - newVoteCount)
+            remainingVotes: Math.max(0, dynamicLimit - newVoteCount)
         });
 
         // Set device cookie

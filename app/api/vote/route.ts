@@ -36,6 +36,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing ids' }, { status: 400 });
         }
 
+        // Server-side daily limit enforcement (prevents over-voting from client race conditions)
+        if (walletAddress && typeof walletAddress === 'string') {
+            const normalizedWallet = walletAddress.toLowerCase();
+            const utcDateKey = new Date().toISOString().split('T')[0];
+            const dailyCounterKey = `votes:wallet:${normalizedWallet}:daily:${utcDateKey}`;
+
+            const bonusKey = `user:${normalizedWallet}:bonus:1v1:${utcDateKey}`;
+            const bonusVotes = (await kv.get(bonusKey) as number) || 0;
+            const dailyLimit = 69 + bonusVotes;
+
+            // Atomic increment
+            const newVotes = await kv.incr(dailyCounterKey);
+            if (newVotes > dailyLimit) {
+                await kv.decr(dailyCounterKey); // Rollback
+                return NextResponse.json(
+                    { error: 'Daily limit reached', votesToday: dailyLimit, dailyLimit },
+                    { status: 429 }
+                );
+            }
+            await kv.expire(dailyCounterKey, 60 * 60 * 48); // 48h TTL
+        }
+
         // --- Weekly Stats ---
         // Increment winner stats
         const wWins = await kv.hincrby(`stats:weekly:${winnerId}`, 'wins', 1);
@@ -143,7 +165,10 @@ export async function POST(request: Request) {
             const normalizedWallet = walletAddress.toLowerCase();
             const walletVote = JSON.stringify({ winnerId, loserId, timestamp });
             await kv.lpush(`votes:wallet:${normalizedWallet}`, walletVote);
-            await kv.ltrim(`votes:wallet:${normalizedWallet}`, 0, 49999); // Keep last 50,000 votes (approx 5 years at 30/day)
+            await kv.ltrim(`votes:wallet:${normalizedWallet}`, 0, 49999);
+
+            // Increment daily vote counter (UTC)
+            // (Already incremented atomically at the start of the request to prevent race conditions)
         }
 
         return NextResponse.json({ success: true });
@@ -155,39 +180,52 @@ export async function POST(request: Request) {
 
 }
 
+const BASE_DAILY_LIMIT = 69;
+
+function getDateKey(): string {
+    return new Date().toISOString().split('T')[0];
+}
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const wallet = searchParams.get('wallet');
+    const skip = searchParams.get('skip') === '1'; // Refresh penalty: increment counter first
 
     if (!wallet) {
-        return NextResponse.json({ votesToday: 0 });
+        return NextResponse.json({ votesToday: 0, dailyLimit: BASE_DAILY_LIMIT });
     }
 
     try {
         const normalizedWallet = wallet.toLowerCase();
-        // Fetch last 200 votes
-        const rawVotes = await kv.lrange(`votes:wallet:${normalizedWallet}`, 0, 199);
+        const dateKey = getDateKey();
+        const dailyCounterKey = `votes:wallet:${normalizedWallet}:daily:${dateKey}`;
 
-        // Count votes from today (UTC)
-        // We use UTC string match YYYY-MM-DD
-        // Or just timestamp > start of day
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        // If skip=1, atomically increment the counter first (refresh penalty)
+        // But only if under the daily limit
+        let votesToday: number;
+        if (skip) {
+            // Check limit before applying skip penalty
+            const currentVotes = (await kv.get(dailyCounterKey) as number) || 0;
+            const bonusKey = `user:${normalizedWallet}:bonus:1v1:${dateKey}`;
+            const bonusVotes = (await kv.get(bonusKey) as number) || 0;
+            const limit = 69 + bonusVotes;
 
-        let votesToday = 0;
-
-        for (const v of rawVotes) {
-            try {
-                const vote = typeof v === 'string' ? JSON.parse(v) : v;
-                if (vote.timestamp >= startOfDay) {
-                    votesToday++;
-                }
-            } catch (e) {
-                continue;
+            if (currentVotes < limit) {
+                votesToday = await kv.incr(dailyCounterKey);
+                await kv.expire(dailyCounterKey, 60 * 60 * 48);
+            } else {
+                votesToday = currentVotes;
             }
+        } else {
+            votesToday = (await kv.get(dailyCounterKey) as number) || 0;
         }
 
-        return NextResponse.json({ votesToday });
+        // Fetch bonus votes for today
+        const bonusKey = `user:${normalizedWallet}:bonus:1v1:${dateKey}`;
+        const bonusVotes = (await kv.get(bonusKey) as number) || 0;
+        const dailyLimit = BASE_DAILY_LIMIT + bonusVotes;
+
+        return NextResponse.json({ votesToday, dailyLimit });
     } catch (error) {
         console.error('Vote count error:', error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });

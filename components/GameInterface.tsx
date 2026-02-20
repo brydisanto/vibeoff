@@ -7,14 +7,16 @@ import VibeCard from './VibeCard';
 import Leaderboard from './Leaderboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
+import BuyVotesModal from './BuyVotesModal';
 
 export default function GameInterface() {
     const { address } = useAccount();
-    const { gameState, matchup, matchupQueue, vote, remainingVotes, canVote, loading } = useGameLogic(address);
+    const { gameState, matchup, matchupQueue, vote, remainingVotes, canVote, refreshLimit, loading } = useGameLogic(address);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [fetchedStats, setFetchedStats] = useState<Record<string, any>>({});
     const [dailyVoteAvailable, setDailyVoteAvailable] = useState(false);
     const [walletConnected, setWalletConnected] = useState(false);
+    const [showBuyModal, setShowBuyModal] = useState(false);
 
     // Handle Twitter/X share with image
     const handleShare = () => {
@@ -118,7 +120,7 @@ export default function GameInterface() {
                                 <span className="text-gray-400 text-[10px] md:text-xs font-bold tracking-wider">DAILY VOTES</span>
                             </div>
                             <div className={`px-4 md:px-5 py-2 md:py-3 flex items-center ${canVote ? 'bg-gvc-gold' : 'bg-red-500'}`}>
-                                <span className="text-black font-mono text-lg md:text-xl font-black">{remainingVotes}</span>
+                                <span className="text-black font-mono text-lg md:text-xl font-black">{remainingVotes ?? '...'}</span>
                             </div>
                         </div>
 
@@ -230,7 +232,12 @@ export default function GameInterface() {
                                         className="mb-4 md:mb-8 p-3 md:p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-center w-full"
                                     >
                                         <p className="font-bold text-sm md:text-base">Daily Limit Reached!</p>
-                                        <p className="text-xs md:text-sm">Come back tomorrow to cast more votes.</p>
+                                        <button
+                                            onClick={() => setShowBuyModal(true)}
+                                            className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
+                                        >
+                                            Get More Votes
+                                        </button>
                                     </motion.div>
                                 )}
 
@@ -330,6 +337,16 @@ export default function GameInterface() {
                     )}
                 </AnimatePresence>
             </div >
+
+            {/* Buy Votes Modal */}
+            <BuyVotesModal
+                isOpen={showBuyModal}
+                onClose={() => setShowBuyModal(false)}
+                packageType="1v1"
+                onSuccess={() => {
+                    refreshLimit();
+                }}
+            />
         </div >
     );
 }
