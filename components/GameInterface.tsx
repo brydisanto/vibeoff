@@ -232,12 +232,14 @@ export default function GameInterface() {
                                         className="mb-4 md:mb-8 p-3 md:p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-center w-full"
                                     >
                                         <p className="font-bold text-sm md:text-base">Daily Limit Reached!</p>
-                                        <button
-                                            onClick={() => setShowBuyModal(true)}
-                                            className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
-                                        >
-                                            Get More Votes
-                                        </button>
+                                        {process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === 'true' && (
+                                            <button
+                                                onClick={() => setShowBuyModal(true)}
+                                                className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
+                                            >
+                                                Get More Votes
+                                            </button>
+                                        )}
                                     </motion.div>
                                 )}
 

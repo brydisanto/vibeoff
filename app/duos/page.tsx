@@ -668,12 +668,14 @@ export default function DuosPage() {
                                             <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-center">
                                                 <p className="text-red-400 text-xl md:text-2xl font-mundial font-bold mb-4">{error}</p>
                                                 {error.includes('vote limit') || error.includes('limit reached') ? (
-                                                    <button
-                                                        onClick={() => setShowBuyModal(true)}
-                                                        className="px-6 py-3 bg-gvc-gold text-black rounded-lg font-bold font-mundial uppercase tracking-wider hover:bg-[#FFE058] transition-all"
-                                                    >
-                                                        Get More Votes
-                                                    </button>
+                                                    process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === 'true' && (
+                                                        <button
+                                                            onClick={() => setShowBuyModal(true)}
+                                                            className="px-6 py-3 bg-gvc-gold text-black rounded-lg font-bold font-mundial uppercase tracking-wider hover:bg-[#FFE058] transition-all"
+                                                        >
+                                                            Get More Votes
+                                                        </button>
+                                                    )
                                                 ) : (
                                                     <Link
                                                         href="/profile"
@@ -694,12 +696,14 @@ export default function DuosPage() {
                                                     className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-center w-full"
                                                 >
                                                     <p className="font-bold font-mundial">Daily Limit Reached!</p>
-                                                    <button
-                                                        onClick={() => setShowBuyModal(true)}
-                                                        className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
-                                                    >
-                                                        Get More Votes
-                                                    </button>
+                                                    {process.env.NEXT_PUBLIC_ENABLE_PAYMENTS === 'true' && (
+                                                        <button
+                                                            onClick={() => setShowBuyModal(true)}
+                                                            className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
+                                                        >
+                                                            Get More Votes
+                                                        </button>
+                                                    )}
                                                 </motion.div>
                                             )}
 
