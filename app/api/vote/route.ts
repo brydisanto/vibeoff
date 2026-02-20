@@ -98,11 +98,33 @@ export async function POST(request: Request) {
         await kv.ltrim('history:global', 0, 49); // Keep last 50
 
         // --- All Time Stats ---
-        const atWins = await kv.hincrby(`stats:alltime:${winnerId}`, 'wins', 1);
-        await kv.hincrby(`stats:alltime:${winnerId}`, 'matches', 1);
+        // --- All Time Stats (Atomic Pipeline) ---
+        const pipeline = kv.pipeline();
+        // Winner Updates
+        pipeline.hincrby(`stats:alltime:${winnerId}`, 'wins', 1);
+        pipeline.hincrby(`stats:alltime:${winnerId}`, 'matches', 1);
+        pipeline.hget(`stats:alltime:${winnerId}`, 'losses');
+        // Loser Updates
+        pipeline.hincrby(`stats:alltime:${loserId}`, 'losses', 1);
+        pipeline.hincrby(`stats:alltime:${loserId}`, 'matches', 1);
+        pipeline.hget(`stats:alltime:${loserId}`, 'wins');
 
-        await kv.hincrby(`stats:alltime:${loserId}`, 'losses', 1);
-        await kv.hincrby(`stats:alltime:${loserId}`, 'matches', 1);
+        const results = await pipeline.exec();
+
+        // Parse pipeline results
+        const atWins = results[0] as number;
+        const atWinnerMatches = results[1] as number;
+        const atWinnerLosses = Number(results[2] || 0);
+
+        const atLoserLosses = results[3] as number;
+        const atLoserMatches = results[4] as number;
+        const atLoserWins = Number(results[5] || 0);
+
+        // Calculate Frontend-Equivalent Ranking Score
+        // Formula: (Wins - Losses) * 10000 + (Win Rate * 1000)
+        // This ensures the backend `zrevrank` perfectly matches frontend sorting.
+        const winnerScore = (atWins - atWinnerLosses) * 10000 + (atWins / Math.max(1, atWinnerMatches)) * 1000;
+        const loserScore = (atLoserWins - atLoserLosses) * 10000 + (atLoserWins / Math.max(1, atLoserMatches)) * 1000;
 
         // --- Win Streak Tracking ---
         // Winner: increment streak
@@ -141,7 +163,10 @@ export async function POST(request: Request) {
         ]);
 
         // Update Sorted Set for Leaderboard (All Time)
-        await kv.zadd('leaderboard:alltime', { score: atWins, member: winnerId });
+        await Promise.all([
+            kv.zadd('leaderboard:alltime', { score: winnerScore, member: winnerId }),
+            kv.zadd('leaderboard:alltime', { score: loserScore, member: loserId })
+        ]);
 
         // --- Match History (Last 50) ---
         const timestamp = Date.now();
