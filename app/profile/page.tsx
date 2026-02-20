@@ -252,75 +252,35 @@ export default function ProfilePage() {
 
     // Fetch Recommendations
     useEffect(() => {
-        // --- MOCK DATA TOGGLE ---
-        const USE_MOCK = false;
-
-        if (USE_MOCK) {
-            setRecLoading(true);
-
-            // Generate dummy data from initial characters
-            const dummyVibes = INITIAL_CHARACTERS.slice(0, 10).map((c, i) => ({
-                id: c.id,
-                name: c.name,
-                url: c.url,
-                score: 95 - i * 2,
-                matchingTraits: ['Cool Shades', 'Mohawk', 'Vibe'],
-                opensea: `https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/${c.id}`
-            }));
-
-            const dummyListed = INITIAL_CHARACTERS.slice(10, 20).map((c, i) => ({
-                id: c.id,
-                name: c.name,
-                url: c.url,
-                score: 88 - i * 3,
-                matchingTraits: ['Headphones', 'Beanie'],
-                price: 0.05 + (i * 0.02),
-                opensea: `https://opensea.io/assets/ethereum/0xb8ea78fcacef50d41375e44e6814ebba36bb33c4/${c.id}`
-            }));
-
-            const dummyData: RecommendationData = {
-                needsMoreVotes: false,
-                currentVotes: 25,
-                requiredVotes: 20,
-                allTimeVibes: dummyVibes,
-                listedRecommendations: dummyListed,
-                favoriteTraits: [
-                    { trait: 'Mohawk', score: 50, timesVotedFor: 25, timesRejected: 5 },
-                    { trait: 'Cool Shades', score: 45, timesVotedFor: 22, timesRejected: 3 },
-                    { trait: 'Vibe', score: 40, timesVotedFor: 20, timesRejected: 8 },
-                    { trait: 'Headphones', score: 35, timesVotedFor: 18, timesRejected: 2 },
-                    { trait: 'Beanie', score: 30, timesVotedFor: 15, timesRejected: 4 },
-                ],
-                totalListings: 150
-            };
-
-            const timer = setTimeout(() => {
-                setRecommendations(dummyData);
-                setRecLoading(false);
-            }, 800);
-
-            return () => clearTimeout(timer);
-        }
-
         if (!address) {
             setRecommendations(null);
             return;
         }
 
+        const abortController = new AbortController();
+
         const fetchRecs = async () => {
             setRecLoading(true);
             try {
-                const res = await fetch(`/api/recommendations?wallet=${address}&maxBudget=${maxBudget}`);
+                const res = await fetch(`/api/recommendations?wallet=${address}&maxBudget=${maxBudget}`, {
+                    signal: abortController.signal,
+                    cache: 'no-store'
+                });
                 const data = await res.json();
                 if (data.error) {
                     console.error('Recs error:', data.error);
                 } else {
                     setRecommendations(data);
                 }
-            } catch (err) {
-                console.error('Failed to fetch recs:', err);
+            } catch (err: any) {
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to fetch recs:', err);
+                }
             } finally {
-                setRecLoading(false);
+                // Only toggle loading off if this request wasn't aborted
+                if (!abortController.signal.aborted) {
+                    setRecLoading(false);
+                }
             }
         };
 
@@ -329,7 +289,10 @@ export default function ProfilePage() {
             fetchRecs();
         }, 500);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            abortController.abort();
+        };
     }, [address, maxBudget]);
 
     const getWinRate = (gvc: GvcStats) => {
