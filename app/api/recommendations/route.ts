@@ -93,9 +93,15 @@ const getGroupedTraitName = (value: string): string => {
 
 // ─── Get traits for a GVC ID ───────────────────────────────────────────────────
 const getGvcTraits = (id: number): string[] => {
-    const traits = (traitMap as Record<string, Record<string, string>>)[String(id)];
-    if (!traits) return [];
-    return Object.values(traits).map(v => getGroupedTraitName(String(v)));
+    const rawTraits = (traitMap as Record<string, Record<string, string>>)[String(id)];
+    if (!rawTraits) return [];
+
+    const traits: string[] = [];
+    for (const [category, value] of Object.entries(rawTraits)) {
+        if (category === 'Background' || category === 'Type' || category === 'Rank' || category === 'Score' || category === 'id') continue;
+        traits.push(getGroupedTraitName(String(value)));
+    }
+    return traits;
 };
 
 // ─── Listings Cache ────────────────────────────────────────────────────────────

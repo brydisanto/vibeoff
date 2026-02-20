@@ -1,0 +1,52 @@
+[
+  {
+    "winnerId": 5886,
+    "loserId": 2534,
+    "timestamp": 1771090689080
+  },
+  {
+    "winnerId": 6176,
+    "loserId": 519,
+    "timestamp": 1771090689948
+  },
+  {
+    "winnerId": 2682,
+    "loserId": 1129,
+    "timestamp": 1771090690717
+  },
+  {
+    "winnerId": 1659,
+    "loserId": 1699,
+    "timestamp": 1771090691723
+  },
+  {
+    "winnerId": 2307,
+    "loserId": 5607,
+    "timestamp": 1771090692617
+  },
+  {
+    "winnerId": 1987,
+    "loserId": 6673,
+    "timestamp": 1771090693332
+  },
+  {
+    "winnerId": 4910,
+    "loserId": 2824,
+    "timestamp": 1771090694185
+  },
+  {
+    "winnerId": 6048,
+    "loserId": 2818,
+    "timestamp": 1771090695282
+  },
+  {
+    "winnerId": 6265,
+    "loserId": 1963,
+    "timestamp": 1771090696748
+  },
+  {
+    "winnerId": 48,
+    "loserId": 2864,
+    "timestamp": 1771090697631
+  }
+]

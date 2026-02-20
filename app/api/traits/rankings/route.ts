@@ -185,7 +185,9 @@ export async function GET() {
             const traits = traitMap[id];
             if (!traits) return;
 
-            Object.values(traits).forEach((value) => {
+            Object.entries(traits).forEach(([category, value]) => {
+                if (category === 'Background' || category === 'Type' || category === 'Rank' || category === 'Score' || category === 'id') return;
+
                 const rawVal = String(value);
                 const valStr = getGroupedTraitName(rawVal);
 
