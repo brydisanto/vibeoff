@@ -7,6 +7,10 @@ import { headers } from 'next/headers';
 // Create a Map for O(1) lookup
 const characterMap = new Map(INITIAL_CHARACTERS.map((char, index) => [char.id, index]));
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 export async function POST(request: Request) {
     try {
         // Rate Limiting

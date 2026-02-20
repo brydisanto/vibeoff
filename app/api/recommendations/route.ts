@@ -13,6 +13,8 @@ import { INITIAL_CHARACTERS } from '@/lib/data';
 import traitMap from '@/lib/trait_map.json';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY || '003c902b643e4b06b14ae18bda215739';
 const CONTRACT_ADDRESS = '0xB8Ea78fcaCEf50d41375E44E6814ebbA36Bb33c4';
