@@ -613,12 +613,12 @@ export default function ProfilePage() {
                                             {activeRecTab === 'alltime' && (
                                                 <button
                                                     onClick={() => setHideGrails(!hideGrails)}
-                                                    className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider transition-colors border ${hideGrails
-                                                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30'
-                                                        : 'bg-zinc-800 text-gray-400 border-white/10 hover:text-white hover:bg-zinc-700'
+                                                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wide transition-all border flex items-center justify-center ${hideGrails
+                                                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                                                        : 'bg-zinc-900/80 text-gray-400 border-white/10 hover:text-white hover:bg-white/5'
                                                         }`}
                                                 >
-                                                    {hideGrails ? 'Grails Hidden 🙈' : 'Hide Grails'}
+                                                    {hideGrails ? 'Grails Hidden' : 'Hide Grails'}
                                                 </button>
                                             )}
 
