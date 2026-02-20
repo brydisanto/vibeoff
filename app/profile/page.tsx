@@ -99,6 +99,7 @@ export default function ProfilePage() {
     const [recLoading, setRecLoading] = useState(false);
     const [maxBudget, setMaxBudget] = useState(3); // Default 3 ETH
     const [activeRecTab, setActiveRecTab] = useState<'listed' | 'alltime'>('listed');
+    const [hideGrails, setHideGrails] = useState(false);
     const [activeTab, setActiveTab] = useState<'collection' | 'duos' | 'recs' | 'activity'>('collection');
 
     // Request notification permission
@@ -262,7 +263,7 @@ export default function ProfilePage() {
         const fetchRecs = async () => {
             setRecLoading(true);
             try {
-                const res = await fetch(`/api/recommendations?wallet=${address}&maxBudget=${maxBudget}`, {
+                const res = await fetch(`/api/recommendations?wallet=${address}&maxBudget=${maxBudget}&hideGrails=${hideGrails}`, {
                     signal: abortController.signal,
                     cache: 'no-store'
                 });
@@ -293,7 +294,7 @@ export default function ProfilePage() {
             clearTimeout(timer);
             abortController.abort();
         };
-    }, [address, maxBudget]);
+    }, [address, maxBudget, hideGrails]);
 
     const getWinRate = (gvc: GvcStats) => {
         if (gvc.allTime.matches === 0) return 0;
@@ -628,6 +629,22 @@ export default function ProfilePage() {
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Hide Grails Toggle (Only in All Time Vibes) */}
+                                    {activeRecTab === 'alltime' && (
+                                        <div className="flex justify-end pr-1">
+                                            <button
+                                                onClick={() => setHideGrails(!hideGrails)}
+                                                className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider transition-colors border ${hideGrails
+                                                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30'
+                                                    : 'bg-zinc-800 text-gray-400 border-white/10 hover:text-white hover:bg-zinc-700'
+                                                    }`}
+                                            >
+                                                {hideGrails ? 'Grails Hidden 🙈' : 'Hide Grails'}
+                                            </button>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                         {(activeRecTab === 'listed' ? recommendations?.listedRecommendations : recommendations?.allTimeVibes)?.map((gvc, index) => {
                                             const isTopPick = index === 0;

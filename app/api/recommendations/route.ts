@@ -187,6 +187,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const wallet = searchParams.get('wallet');
     const maxBudget = parseFloat(searchParams.get('maxBudget') || '999');
+    const hideGrails = searchParams.get('hideGrails') === 'true';
 
     if (!wallet) {
         return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
@@ -279,6 +280,30 @@ export async function GET(request: NextRequest) {
 
         for (let id = 1; id <= 6969; id++) {
             if (ownedGvcIds.has(id)) continue; // Skip owned
+
+            if (hideGrails) {
+                const rawTraits = (traitMap as Record<string, Record<string, string>>)[id.toString()];
+                if (rawTraits) {
+                    const type = rawTraits['Type'];
+                    const face = rawTraits['Face'];
+                    if (
+                        face === 'No Face' ||
+                        type === 'Cosmic Guardian' ||
+                        type === 'Vibefoot' ||
+                        type === 'The Champion Of Vibes' ||
+                        type === 'Flower Power' ||
+                        type === 'Chill Vibes Guy' ||
+                        type === 'Super Vibe' ||
+                        type === 'XRay' ||
+                        type === 'Glass Jelly' ||
+                        type === 'Bad Vibes Guy' ||
+                        type === 'Holo Leader' ||
+                        type === 'Unfinished Stone Sculpture'
+                    ) {
+                        continue; // Skip this grail
+                    }
+                }
+            }
 
             const traits = getGvcTraits(id);
             if (traits.length === 0) continue;
