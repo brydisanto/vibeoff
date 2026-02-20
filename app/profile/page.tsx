@@ -607,43 +607,43 @@ export default function ProfilePage() {
                                             />
                                         </div>
 
-                                        {/* Tabs */}
-                                        <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
-                                            <button
-                                                onClick={() => setActiveRecTab('listed')}
-                                                className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
-                                                    ? 'bg-[#FFE048] text-black shadow-lg'
-                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                                    }`}
-                                            >
-                                                Listed ({recommendations?.listedRecommendations?.length || 0})
-                                            </button>
-                                            <button
-                                                onClick={() => setActiveRecTab('alltime')}
-                                                className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
-                                                    ? 'bg-[#FFE048] text-black shadow-lg'
-                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                                    }`}
-                                            >
-                                                All Time Vibes
-                                            </button>
+                                        {/* Tabs & Toggles */}
+                                        <div className="flex items-center gap-4 mt-4 md:mt-0">
+                                            {/* Hide Grails Toggle (Only in All Time Vibes) */}
+                                            {activeRecTab === 'alltime' && (
+                                                <button
+                                                    onClick={() => setHideGrails(!hideGrails)}
+                                                    className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider transition-colors border ${hideGrails
+                                                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30'
+                                                        : 'bg-zinc-800 text-gray-400 border-white/10 hover:text-white hover:bg-zinc-700'
+                                                        }`}
+                                                >
+                                                    {hideGrails ? 'Grails Hidden 🙈' : 'Hide Grails'}
+                                                </button>
+                                            )}
+
+                                            <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-1 flex gap-1">
+                                                <button
+                                                    onClick={() => setActiveRecTab('listed')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'listed'
+                                                        ? 'bg-[#FFE048] text-black shadow-lg'
+                                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    Listed ({recommendations?.listedRecommendations?.length || 0})
+                                                </button>
+                                                <button
+                                                    onClick={() => setActiveRecTab('alltime')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${activeRecTab === 'alltime'
+                                                        ? 'bg-[#FFE048] text-black shadow-lg'
+                                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    All Time Vibes
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {/* Hide Grails Toggle (Only in All Time Vibes) */}
-                                    {activeRecTab === 'alltime' && (
-                                        <div className="flex justify-end pr-1">
-                                            <button
-                                                onClick={() => setHideGrails(!hideGrails)}
-                                                className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider transition-colors border ${hideGrails
-                                                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30'
-                                                    : 'bg-zinc-800 text-gray-400 border-white/10 hover:text-white hover:bg-zinc-700'
-                                                    }`}
-                                            >
-                                                {hideGrails ? 'Grails Hidden 🙈' : 'Hide Grails'}
-                                            </button>
-                                        </div>
-                                    )}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                         {(activeRecTab === 'listed' ? recommendations?.listedRecommendations : recommendations?.allTimeVibes)?.map((gvc, index) => {
