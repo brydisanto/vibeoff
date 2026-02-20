@@ -4,6 +4,7 @@ import { INITIAL_CHARACTERS } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 // Optimize character lookup
 const characterMap = new Map(INITIAL_CHARACTERS.map(c => [c.id, c]));

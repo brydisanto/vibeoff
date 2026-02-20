@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAccount, useSendTransaction } from 'wagmi';
-import { parseEther } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
+import { parseEther, parseAbi } from 'viem';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_TREASURY_ADDRESS as `0x${string}`;
-const VOTE_PRICE = '0.001'; // ETH
+const VIBESTR_ADDRESS = '0xd0cC2b0eFb168bFe1f94a948D8df70FA10257196';
+const VOTE_PRICE = '250'; // VIBESTR
+const erc20Abi = parseAbi(['function transfer(address to, uint256 amount) returns (bool)']);
 const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 3000;
 
@@ -67,7 +69,7 @@ export default function BuyVotesModal({ isOpen, onClose, packageType, onSuccess 
     useEffect(() => { packageTypeRef.current = packageType; }, [packageType]);
     useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
 
-    const { sendTransaction, isPending: isSending, reset: resetTx } = useSendTransaction();
+    const { writeContractAsync, isPending: isSending, reset: resetTx } = useWriteContract();
 
     const label = packageType === '1v1'
         ? 'Fresh Set Of 1v1 Votes (69 Pack)'
@@ -138,28 +140,25 @@ export default function BuyVotesModal({ isOpen, onClose, packageType, onSuccess 
         poll(0);
     };
 
-    const handleBuy = () => {
+    const handleBuy = async () => {
         if (!isConnected || !address) return;
         setError(null);
 
-        sendTransaction(
-            {
-                to: TREASURY_ADDRESS,
-                value: parseEther(VOTE_PRICE),
-            },
-            {
-                onSuccess: (hash) => {
-                    console.log(`[BuyVotes] Transaction sent! Hash: ${hash}`);
-                    startPolling(hash);
-                },
-                onError: (err) => {
-                    console.error(`[BuyVotes] Transaction error:`, err);
-                    setError(err.message?.includes('rejected')
-                        ? 'Transaction was rejected.'
-                        : 'Failed to send transaction. Please try again.');
-                },
-            }
-        );
+        try {
+            const hash = await writeContractAsync({
+                address: VIBESTR_ADDRESS,
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [TREASURY_ADDRESS, parseEther(VOTE_PRICE)],
+            });
+            console.log(`[BuyVotes] Transaction sent! Hash: ${hash}`);
+            startPolling(hash);
+        } catch (err: any) {
+            console.error(`[BuyVotes] Transaction error:`, err);
+            setError(err.message?.includes('rejected')
+                ? 'Transaction was rejected.'
+                : 'Failed to send transaction. Please try again.');
+        }
     };
 
     const handleClose = () => {
@@ -248,7 +247,7 @@ export default function BuyVotesModal({ isOpen, onClose, packageType, onSuccess 
                                     <div className="flex justify-between items-center">
                                         <div>
                                             <p className="text-white font-bold font-mundial">{label}</p>
-                                            <p className="text-gray-400 text-sm font-mono">{VOTE_PRICE} ETH</p>
+                                            <p className="text-gray-400 text-sm font-mono">{VOTE_PRICE} $VIBESTR</p>
                                         </div>
                                         <motion.div
                                             className="w-10 h-10"
@@ -260,10 +259,6 @@ export default function BuyVotesModal({ isOpen, onClose, packageType, onSuccess 
                                     </div>
                                 </div>
 
-                                {/* Proceeds info */}
-                                <p className="text-gray-500 text-xs font-mundial text-center mb-4">
-                                    Proceeds are used to support $VIBESTR, as well as for ongoing site development (i.e. mostly to buy coffee for Bry).
-                                </p>
 
                                 {/* Error */}
                                 {error && (
@@ -291,7 +286,7 @@ export default function BuyVotesModal({ isOpen, onClose, packageType, onSuccess 
                                     >
                                         {isSending ? 'Confirm in wallet...' :
                                             verifying ? statusText :
-                                                `Buy for ${VOTE_PRICE} ETH`}
+                                                `Buy for ${VOTE_PRICE} $VIBESTR`}
                                     </button>
                                 )}
 

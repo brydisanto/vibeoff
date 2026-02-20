@@ -4,6 +4,7 @@ import { kv } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 const OPENSEA_API_KEY = '003c902b643e4b06b14ae18bda215739';
 const GVC_CONTRACT = '0xB8Ea78fcaCEf50d41375E44E6814ebbA36Bb33c4';

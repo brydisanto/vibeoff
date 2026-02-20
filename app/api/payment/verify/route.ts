@@ -14,12 +14,14 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createPublicClient, http, fallback, parseEther, formatEther } from 'viem';
+import { createPublicClient, http, fallback, parseEther, formatEther, decodeEventLog, parseAbi } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 import { kv } from '@/lib/kv';
 
 const TREASURY_ADDRESS = (process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '').toLowerCase();
-const REQUIRED_AMOUNT = parseEther('0.001');
+const VIBESTR_ADDRESS = '0xd0cC2b0eFb168bFe1f94a948D8df70FA10257196'.toLowerCase();
+const REQUIRED_AMOUNT = parseEther('250');
+const erc20TransferAbi = parseAbi(['event Transfer(address indexed from, address indexed to, uint256 value)']);
 
 // Use sepolia for testing, mainnet for production
 const chain = process.env.ETH_CHAIN === 'sepolia' ? sepolia : mainnet;
@@ -98,30 +100,65 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Transaction failed on-chain' }, { status: 400 });
         }
 
-        // Fetch the actual tx to check value and recipient
+        // Fetch the actual tx to verify sender (since anyone could emit an event with the user's address)
         const tx = await client.getTransaction({ hash: normalizedTxHash as `0x${string}` });
-
-        // Verify recipient
-        if (tx.to?.toLowerCase() !== TREASURY_ADDRESS) {
-            await kv.del(lockKey);
-            return NextResponse.json({
-                error: 'Transaction recipient does not match treasury',
-            }, { status: 400 });
-        }
-
-        // Verify amount (must be >= 0.001 ETH)
-        if (tx.value < REQUIRED_AMOUNT) {
-            await kv.del(lockKey);
-            return NextResponse.json({
-                error: `Insufficient payment. Expected 0.001 ETH, got ${formatEther(tx.value)} ETH`,
-            }, { status: 400 });
-        }
 
         // Verify sender matches claimed wallet
         if (tx.from.toLowerCase() !== normalizedWallet) {
             await kv.del(lockKey);
             return NextResponse.json({
                 error: 'Transaction sender does not match provided wallet',
+            }, { status: 400 });
+        }
+
+        // --- Security Audit Fix: Parse Event Logs ---
+        // We must verify the actual 'Transfer' event emitted by the VIBESTR contract.
+        // Reading `tx.input` is insecure because failed token transfers might not revert the parent transaction.
+
+        let validTransferFound = false;
+        let actualAmountProcessed = BigInt(0);
+
+        for (const log of receipt.logs) {
+            // Only process logs from the VIBESTR token contract
+            if (log.address.toLowerCase() !== VIBESTR_ADDRESS) continue;
+
+            try {
+                const decoded = decodeEventLog({
+                    abi: erc20TransferAbi,
+                    data: log.data,
+                    topics: log.topics,
+                });
+
+                if (decoded.eventName === 'Transfer') {
+                    const fromAddr = (decoded.args.from as string).toLowerCase();
+                    const toAddr = (decoded.args.to as string).toLowerCase();
+                    const amount = decoded.args.value as bigint;
+
+                    // Verify the transfer matches our criteria
+                    if (fromAddr === normalizedWallet && toAddr === TREASURY_ADDRESS) {
+                        validTransferFound = true;
+                        actualAmountProcessed = amount;
+                        break; // Found the valid payment log
+                    }
+                }
+            } catch (err) {
+                // Ignore logs that don't match the Transfer ABI (e.g. other events)
+                continue;
+            }
+        }
+
+        if (!validTransferFound) {
+            await kv.del(lockKey);
+            return NextResponse.json({
+                error: 'No valid VIBESTR transfer event found in transaction',
+            }, { status: 400 });
+        }
+
+        // Verify amount
+        if (actualAmountProcessed < REQUIRED_AMOUNT) {
+            await kv.del(lockKey);
+            return NextResponse.json({
+                error: `Insufficient payment. Expected 250 VIBESTR, got ${formatEther(actualAmountProcessed)} VIBESTR`,
             }, { status: 400 });
         }
 
@@ -135,11 +172,10 @@ export async function POST(request: Request) {
         // Set TTL to 48h so it auto-cleans (covers timezone edge cases)
         await kv.expire(bonusKey, 60 * 60 * 48);
 
-        // Mark tx as processed (keep for 7 days)
         await kv.set(txKey, JSON.stringify({
             wallet: normalizedWallet,
             packageType,
-            amount: formatEther(tx.value),
+            amount: formatEther(actualAmountProcessed),
             timestamp: Date.now(),
         }));
         await kv.expire(txKey, 60 * 60 * 24 * 7);
