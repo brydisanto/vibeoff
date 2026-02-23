@@ -93,9 +93,9 @@ export default function GameInterface() {
     return (
         <div className="w-full min-h-screen p-2 md:p-8 flex flex-col items-center">
 
-            {/* DOM-based Pre-loader: Hidden images to force browser to cache them */}
+            {/* DOM-based Pre-loader: Only load the next 2 matchups (4 images) to prevent mobile connection starvation */}
             <div className="hidden" aria-hidden="true">
-                {matchupQueue.map((pair, i) => (
+                {matchupQueue.slice(0, 2).map((pair, i) => (
                     pair.map(char => (
                         <img
                             key={`preload-${i}-${char.id}`}

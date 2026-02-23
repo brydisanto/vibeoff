@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Off! - Enhanced Original Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&family=JetBrains+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --gvc-gold: #FFE048;
+            --gvc-gold-glow: rgba(255, 224, 72, 0.4);
+            /* #1 Glassmorphism */
+            --glass-bg: rgba(25, 25, 25, 0.55);
+            --glass-card: rgba(17, 17, 17, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+        }
+
+        @font-face {
+            font-family: 'Cooper Black';
+            src: local('Cooper Black'), local('Cooper Std Black');
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+
+            /* #2 Ambient Lighting Overlay alongside the existing grid */
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(255, 224, 72, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 50%, rgba(138, 43, 226, 0.05) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 50px 50px, 50px 50px;
+            background-attachment: fixed;
+            background-position: center top;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2.5rem 1rem;
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .eyebrow {
+            color: var(--gvc-gold);
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-family: 'Cooper Black', serif;
+            font-size: 7.5rem;
+            color: var(--gvc-gold);
+            line-height: 0.9;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+            /* Glowing text */
+            text-shadow: 0 0 40px rgba(255, 224, 72, 0.25);
+        }
+
+        /* Top HUD */
+        .hud {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hud-group {
+            display: flex;
+            gap: 0.6rem;
+            align-items: stretch;
+        }
+
+        /* Glassmorphism applied to buttons/pills */
+        .glass-element {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .daily-pill {
+            display: flex;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .daily-label {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #888;
+            letter-spacing: 0.15em;
+        }
+
+        .daily-val {
+            background: var(--gvc-gold);
+            color: #000;
+            font-weight: 900;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            color: #fff;
+            background: rgba(40, 40, 40, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .link-icon-mini {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--gvc-gold);
+            color: black;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .link-icon-mini svg {
+            width: 8px;
+            height: 8px;
+        }
+
+        .leaderboard-btn {
+            background: var(--gvc-gold);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            padding: 0 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(255, 224, 72, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .leaderboard-btn:hover {
+            box-shadow: 0 0 25px rgba(255, 224, 72, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Arena */
+        .arena {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            perspective: 1000px;
+        }
+
+        .vs-text {
+            font-family: 'Cooper Black', serif;
+            font-style: italic;
+            font-size: 2.5rem;
+            color: var(--gvc-gold);
+            text-shadow: 0 0 20px rgba(255, 224, 72, 0.5);
+            z-index: 10;
+        }
+
+        /* Cards with #1 and #4 */
+        .vote-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--glass-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Golden border glow hidden by default */
+        .vote-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            border: 2px solid var(--gvc-gold);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .card-img-wrap {
+            width: 100%;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            background: #222;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .card-info {
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        .card-title {
+            font-family: 'Cooper Black', serif;
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+
+        .card-owner {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .card-owner span {
+            color: var(--gvc-gold);
+            font-weight: 700;
+        }
+
+        .os-icon {
+            width: 26px;
+            height: 26px;
+            background: #2081E2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .os-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: white;
+        }
+
+        /* #4 Micro-Interactions */
+        .vote-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.6),
+                0 0 40px rgba(255, 224, 72, 0.15);
+            background: rgba(25, 25, 25, 0.6);
+        }
+
+        .vote-card:hover .card-img {
+            transform: scale(1.04);
+        }
+
+        .vote-card:hover::after {
+            opacity: 1;
+            /* Reveal gold border */
+        }
+
+        .vote-card:active {
+            transform: translateY(-2px) scale(1);
+        }
+
+        /* Bottom Section */
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1.5rem;
+            border-radius: 100px;
+            cursor: pointer;
+            margin-bottom: 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .share-btn:hover {
+            background: rgba(20, 20, 20, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modes {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+        }
+
+        .mode-active {
+            color: #fff;
+        }
+
+        .mode-inactive {
+            color: #444;
+        }
+
+        .footer-text {
+            color: #666;
+            font-size: 0.75rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .gvc-hand {
+            width: 48px;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 10px rgba(255, 224, 72, 0.2));
+            color: var(--gvc-gold);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="noise"></div>
+
+    <div class="main-container">
+        <header>
+            <div class="eyebrow">Good Vibes Club Presents</div>
+            <h1>VIBE OFF!</h1>
+        </header>
+
+        <div class="hud">
+            <div class="hud-group">
+                <div class="daily-pill">
+                    <div class="daily-label">DAILY VOTES</div>
+                    <div class="daily-val">68</div>
+                </div>
+                <div class="glass-element icon-btn">
+                    <i data-lucide="check-square"></i>
+                    <div class="notification-dot">1</div>
+                </div>
+                <div class="glass-element icon-btn">
+                    <i data-lucide="user"></i>
+                    <div class="link-icon-mini">
+                        <i data-lucide="link-2" stroke-width="3"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-group">
+                <div class="glass-element icon-btn"><i data-lucide="search"></i></div>
+                <div class="glass-element icon-btn"><i data-lucide="gauge"></i></div>
+                <div class="glass-element icon-btn"><i data-lucide="trophy"></i></div>
+                <button class="leaderboard-btn">LEADERBOARD</button>
+            </div>
+        </div>
+
+        <div class="arena">
+            <!-- Left Card -->
+            <div class="vote-card">
+                <div class="card-img-wrap">
+                    <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/3380.jpg"
+                        alt="GVC 3380" class="card-img">
+                </div>
+                <div class="card-info">
+                    <div>
+                        <div class="card-title">GVC #3380</div>
+                        <div class="card-owner">OWNER <span>0xf41b...8a56</span></div>
+                    </div>
+                    <div class="os-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vs-text">VS</div>
+
+            <!-- Right Card -->
+            <div class="vote-card">
+                <div class="card-img-wrap">
+                    <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/3359.jpg"
+                        alt="GVC 3359" class="card-img">
+                </div>
+                <div class="card-info">
+                    <div>
+                        <div class="card-title">GVC #3359</div>
+                        <div class="card-owner">OWNER <span>0x0fc0...f8a0</span></div>
+                    </div>
+                    <div class="os-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="share-btn">
+            <i data-lucide="scissors" style="width: 14px; height: 14px;"></i>
+            SHARE THIS MATCHUP
+        </button>
+
+        <div class="modes">
+            <div class="mode-active">1V1 MODE</div>
+            <div class="mode-inactive">2V2 MODE</div>
+        </div>
+
+        <div class="footer-text">
+            Tap a card or use [ ⬅️ ] [ ➡️ ] arrow keys • 69 votes per day<br>
+            <span style="opacity: 0.5; margin-top: 4px; display: inline-block;">vibe coded by @brydisanto</span>
+        </div>
+
+        <!-- Hand SVG to match screenshot -->
+        <svg class="gvc-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path>
+            <path d="M4 14.5V10a2 2 0 0 1 2-2v0a2 2 0 0 1 2 2v10a8 8 0 0 1-16 0v-4"></path>
+            <path d="M22 14v6a8 8 0 0 1-16 0"></path>
+        </svg>
+
+    </div>
+
+    <!-- Mouse tracking for the ambient lighting effect to follow the cursor organically -->
+    <script>
+        lucide.createIcons();
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            document.body.style.backgroundImage = `
+                radial-gradient(circle at ${x * 50}% ${y * 100}%, rgba(255, 224, 72, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at ${(1 - x) * 100}% ${(1 - y) * 100}%, rgba(138, 43, 226, 0.05) 0%, transparent 40%),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+            `;
+        });
+    </script>
+</body>
+
+</html>

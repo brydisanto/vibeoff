@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Off! - UI Upgrade Preview</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --gvc-gold: #FFE048;
+            --gvc-gold-glow: rgba(255, 224, 72, 0.6);
+            --card-bg: rgba(25, 25, 25, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Ambient UI Background */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255, 224, 72, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Ambient Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        header {
+            margin-top: 4rem;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .eyebrow {
+            color: var(--gvc-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        h1 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 5rem;
+            line-height: 0.9;
+            background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
+        }
+
+        .title-accent {
+            color: var(--gvc-gold);
+            background: linear-gradient(180deg, #FFE048 0%, #B89B16 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px var(--gvc-gold-glow));
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-w-max: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* Matchup Arena */
+        .arena {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 4rem;
+            z-index: 2;
+            perspective: 1000px;
+        }
+
+        /* Glassmorphism Card */
+        .vibe-card {
+            width: 340px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vibe-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(125deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .vibe-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            border-color: rgba(255, 224, 72, 0.3);
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.5),
+                0 0 40px rgba(255, 224, 72, 0.15);
+        }
+
+        .card-image-wrap {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+        }
+
+        .vibe-card:hover .card-image {
+            transform: scale(1.08);
+        }
+
+        .card-id {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 2;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif;
+        }
+
+        .stat-gold {
+            color: var(--gvc-gold);
+        }
+
+        /* Matchup VS Divider */
+        .vs-divider {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .vs-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #111;
+            border: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #555;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .vs-circle::after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, var(--card-border), transparent);
+            top: -90px;
+        }
+        
+        .vs-circle::before {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, var(--card-border), transparent);
+            bottom: -90px;
+        }
+
+        /* Summary Panel */
+        .upgrades-panel {
+            margin-top: 6rem;
+            max-width: 800px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 3rem;
+            z-index: 2;
+        }
+
+        .upgrades-panel h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .upgrades-panel h3 span {
+            color: var(--gvc-gold);
+        }
+
+        .feature-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #FFF;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .arena {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .vs-circle::before, .vs-circle::after {
+                display: none;
+            }
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <header>
+        <div class="eyebrow">UI Design Proposal</div>
+        <h1>LEVEL UP THE <span class="title-accent">VIBES</span></h1>
+        <p class="subtitle">A demonstration of modern frontend enhancements including glassmorphism, dynamic typography, kinetic hover states, and ambient lighting.</p>
+    </header>
+
+    <div class="arena">
+        <!-- Card 1 -->
+        <div class="vibe-card">
+            <div class="card-id">#5313</div>
+            <div class="card-image-wrap">
+                <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5313.jpg" class="card-image" alt="GVC 5313">
+            </div>
+            <div class="card-stats">
+                <div class="stat-group">
+                    <span class="stat-label">Wins</span>
+                    <span class="stat-value">342</span>
+                </div>
+                <div class="stat-group" style="text-align: right;">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value stat-gold">78%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="vs-divider">
+            <div class="vs-circle">VS</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="vibe-card">
+            <div class="card-id">#6872</div>
+            <div class="card-image-wrap">
+                <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/6872.jpg" class="card-image" alt="GVC 6872">
+            </div>
+            <div class="card-stats">
+                <div class="stat-group">
+                    <span class="stat-label">Wins</span>
+                    <span class="stat-value">289</span>
+                </div>
+                <div class="stat-group" style="text-align: right;">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value stat-gold">64%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="upgrades-panel">
+        <h3><span>✦</span> Architecture of the Upgrade</h3>
+        <ul class="feature-list">
+            <li class="feature-item">
+                <span class="feature-title">Glassmorphism & Depth</span>
+                <span class="feature-desc">Replaced flat black cards with translucent, blurred backdrops <code>backdrop-filter</code> and subtle 1px borders to create spatial hierarchy against the background.</span>
+            </li>
+            <li class="feature-item">
+                <span class="feature-title">Ambient Environmental Lighting</span>
+                <span class="feature-desc">Introduced underlying radial gradients and an SVG noise overlay (grain) to eliminate "dead" flat black space and add texture to the arena.</span>
+            </li>
+            <li class="feature-item">
+                <span class="feature-title">Kinetic Micro-Interactions</span>
+                <span class="feature-desc">Hovering now scales the inner portrait, levitates the card on the Y-axis, and activates a subtle gold ambient drop-shadow.</span>
+            </li>
+            <li class="feature-item">
+                <span class="feature-title">Premium Typography Pairing</span>
+                <span class="feature-desc">Upgraded from standard fonts to 'Bricolage Grotesque' for ultra-heavy, punchy stats/headers, paired with the highly legible 'Outfit' for UI labels.</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Script to simulate the subtle background movement -->
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            document.body.style.backgroundImage = `
+                radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255, 224, 72, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at ${(1 - x) * 100}% ${(1 - y) * 100}%, rgba(138, 43, 226, 0.05) 0%, transparent 40%)
+            `;
+        });
+    </script>
+</body>
+</html>

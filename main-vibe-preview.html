@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Off! - Main Interface Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --gvc-gold: #FFE048;
+            --gvc-gold-glow: rgba(255, 224, 72, 0.4);
+            /* #1 Glassmorphism variables */
+            --glass-bg: rgba(20, 20, 20, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+        }
+
+        @font-face {
+            font-family: 'Cooper Black';
+            src: local('Cooper Black'), local('Cooper Std Black');
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+
+            /* #2 Ambient Lighting Overlay */
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 224, 72, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            background-attachment: fixed;
+        }
+
+        /* Ambient Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.035;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Header typography unchanged (kept original Cooper style) */
+        header {
+            margin-top: 3rem;
+            text-align: center;
+            z-index: 2;
+            margin-bottom: 2rem;
+        }
+
+        .sponsor-tag {
+            color: var(--gvc-gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-family: 'Cooper Black', serif;
+            font-size: 7rem;
+            color: var(--gvc-gold);
+            margin: 0;
+            line-height: 1;
+            text-shadow: 0 0 40px rgba(255, 224, 72, 0.3);
+            letter-spacing: -2px;
+        }
+
+        /* Top HUD / Controls */
+        .hud-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            z-index: 2;
+        }
+
+        .hud-pill {
+            /* #1 Glassmorphism applied to UI elements */
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hud-label {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.8rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #aaa;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .val-gold {
+            background: var(--gvc-gold);
+            color: #000;
+            font-weight: 900;
+            font-size: 1.2rem;
+            padding: 0.6rem 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Main Game Arena */
+        .game-arena {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            position: relative;
+            z-index: 2;
+            perspective: 1000px;
+            /* Needed for 3D interactions */
+        }
+
+        /* #4 Luxurious Card Micro-Interactions & #1 Glassmorphism */
+        .vote-card {
+            width: 460px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 18px;
+            cursor: pointer;
+            position: relative;
+            /* Ultra smooth premium timing curve */
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Surface highlight mimicking physical glass reflection */
+        .vote-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--glass-highlight) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* The dynamic glow that reveals itself on hover */
+        .vote-card::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 34px;
+            background: linear-gradient(45deg, transparent, var(--gvc-gold), transparent);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            /* Inner shadow creates inset depth */
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Smooth scaling for the image */
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .gvc-tag {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: #fff;
+            z-index: 5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Hover States - #4 Luxurious Micro-Interactions */
+        .vote-card:hover {
+            /* Physical levitation */
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(255, 224, 72, 0.4);
+            /* Golden bloom shadow */
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.7),
+                0 0 60px rgba(255, 224, 72, 0.15);
+        }
+
+        .vote-card:hover .card-img {
+            /* Image breathing effect */
+            transform: scale(1.06);
+        }
+
+        .vote-card:hover::after {
+            /* Activates the pseudo-outline border glow */
+            opacity: 1;
+        }
+
+        .vote-card:active {
+            transform: translateY(-4px) scale(0.99);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* VS Indicator */
+        .vs-indicator {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            /* Glassmorphism circle */
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 224, 72, 0.3);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cooper Black', serif;
+            font-size: 1.8rem;
+            color: var(--gvc-gold);
+            z-index: 20;
+            box-shadow:
+                0 0 30px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(255, 224, 72, 0.1);
+        }
+
+        /* Quick Action Bar at bottom */
+        .action-bar {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 2;
+        }
+
+        .btn-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-glass:hover {
+            background: rgba(40, 40, 40, 0.6);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- #2 Ambient Noise -->
+    <div class="noise"></div>
+
+    <header>
+        <div class="sponsor-tag">Good Vibes Club Presents</div>
+        <h1>VIBE OFF!</h1>
+    </header>
+
+    <div class="hud-container">
+        <!-- Daily Votes HUD with #1 Glassmorphism -->
+        <div class="hud-pill">
+            <div class="hud-label">DAILY VOTES</div>
+            <div class="val-gold">64</div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-glass" style="padding: 0.8rem 1.5rem;">Leaderboard</button>
+            <button class="btn-glass" style="padding: 0.8rem 1.5rem;">0x86da...</button>
+        </div>
+    </div>
+
+    <div class="game-arena">
+        <!-- Character 1 -->
+        <div class="vote-card cursor-pointer">
+            <div class="card-image-wrapper">
+                <div class="gvc-tag">#745</div>
+                <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/745.jpg"
+                    alt="Combatant 1" class="card-img" />
+            </div>
+        </div>
+
+        <!-- VS Badge -->
+        <div class="vs-indicator">VS</div>
+
+        <!-- Character 2 -->
+        <div class="vote-card cursor-pointer">
+            <div class="card-image-wrapper">
+                <div class="gvc-tag">#5074</div>
+                <img src="https://nftstorage.link/ipfs/QmY6JpwTYx6zZHgfJb3gPJRh1U897NX4RudtK5jhJ3sNDS/5074.jpg"
+                    alt="Combatant 2" class="card-img" />
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn-glass">Report Match</button>
+        <button class="btn-glass">Buy Votes</button>
+    </div>
+
+    <!-- Mouse tracking for the ambient lighting effect to follow the cursor organically -->
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            // Move the soft highlights slightly towards the cursor to give the game arena true 3D lighting feel
+            document.body.style.backgroundImage = `
+                radial-gradient(circle at ${x * 40}% ${y * 100}%, rgba(255, 224, 72, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at ${(1 - x) * 100}% ${(1 - y) * 100}%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
+            `;
+        });
+    </script>
+</body>
+
+</html>
