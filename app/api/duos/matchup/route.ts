@@ -117,27 +117,6 @@ export async function GET(request: NextRequest) {
         const effectiveVotes = currentVotes + refreshPenalty;
         const remainingVotes = Math.max(0, DAILY_VOTE_LIMIT - effectiveVotes);
 
-        // If user has no votes remaining, return early
-        if (effectiveVotes >= DAILY_VOTE_LIMIT) {
-            const response = NextResponse.json({
-                error: 'No votes remaining',
-                message: 'Daily vote limit reached.',
-                remainingVotes: 0,
-                totalDuos: allDuoIds.length
-            }, { status: 429 });
-
-            if (isNewDevice) {
-                response.cookies.set('duos_device_id', deviceId, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
-                    maxAge: 60 * 60 * 24 * 365
-                });
-            }
-
-            return response;
-        }
-
         // Shuffle and pick candidates
         const shuffledIds = [...allDuoIds].sort(() => Math.random() - 0.5);
         const BATCH_SIZE = 4;

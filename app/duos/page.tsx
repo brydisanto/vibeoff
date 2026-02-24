@@ -689,11 +689,11 @@ export default function DuosPage() {
                                             {/* Vote Limit Warning */}
                                             {!canVote && (
                                                 <motion.div
-                                                    initial={{ opacity: 0, y: -20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-center w-full"
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="mb-4 md:mb-8 p-3 md:p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-center w-full"
                                                 >
-                                                    <p className="font-bold font-mundial">Daily Limit Reached!</p>
+                                                    <p className="font-bold text-sm md:text-base">Daily Limit Reached!</p>
                                                     <button
                                                         onClick={() => setShowBuyModal(true)}
                                                         className="mt-2 px-4 py-2 bg-gvc-gold text-black font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg hover:bg-[#FFE058] transition-all"
