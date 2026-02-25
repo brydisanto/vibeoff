@@ -194,8 +194,6 @@ const fetchActiveListings = async (): Promise<{ tokenId: number; price: number; 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const wallet = searchParams.get('wallet');
-    const maxBudget = parseFloat(searchParams.get('maxBudget') || '999');
-    const hideGrails = searchParams.get('hideGrails') === 'true';
 
     if (!wallet) {
         return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
@@ -283,35 +281,19 @@ export async function GET(request: NextRequest) {
         const ownedGvcsRaw = await kv.smembers(`owner:${normalizedWallet}`);
         const ownedGvcIds = new Set(ownedGvcsRaw.map((id: any) => Number(id)));
 
+        // Grail detection helper
+        const GRAIL_TYPES = new Set(['Cosmic Guardian', 'Vibefoot', 'The Champion Of Vibes', 'Flower Power', 'Chill Vibes Guy', 'Super Vibe', 'XRay', 'Glass Jelly', 'Bad Vibes Guy', 'Holo Leader', 'Unfinished Stone Sculpture']);
+        const isGrailId = (id: number): boolean => {
+            const rawTraits = (traitMap as Record<string, Record<string, string>>)[id.toString()];
+            if (!rawTraits) return false;
+            return rawTraits['Face'] === 'No Face' || GRAIL_TYPES.has(rawTraits['Type']);
+        };
+
         // 5. Score ALL GVCs using Bayesian-smoothed trait scores
-        const allGvcScores: { id: number; score: number; matchingTraits: string[] }[] = [];
+        const allGvcScores: { id: number; score: number; matchingTraits: string[]; isGrail: boolean }[] = [];
 
         for (let id = 1; id <= 6969; id++) {
             if (ownedGvcIds.has(id)) continue; // Skip owned
-
-            if (hideGrails) {
-                const rawTraits = (traitMap as Record<string, Record<string, string>>)[id.toString()];
-                if (rawTraits) {
-                    const type = rawTraits['Type'];
-                    const face = rawTraits['Face'];
-                    if (
-                        face === 'No Face' ||
-                        type === 'Cosmic Guardian' ||
-                        type === 'Vibefoot' ||
-                        type === 'The Champion Of Vibes' ||
-                        type === 'Flower Power' ||
-                        type === 'Chill Vibes Guy' ||
-                        type === 'Super Vibe' ||
-                        type === 'XRay' ||
-                        type === 'Glass Jelly' ||
-                        type === 'Bad Vibes Guy' ||
-                        type === 'Holo Leader' ||
-                        type === 'Unfinished Stone Sculpture'
-                    ) {
-                        continue; // Skip this grail
-                    }
-                }
-            }
 
             const traits = getGvcTraits(id);
             if (traits.length === 0) continue;
@@ -328,15 +310,15 @@ export async function GET(request: NextRequest) {
             }
 
             if (score > 0) {
-                allGvcScores.push({ id, score, matchingTraits });
+                allGvcScores.push({ id, score, matchingTraits, isGrail: isGrailId(id) });
             }
         }
 
         // Sort by score descending
         allGvcScores.sort((a, b) => b.score - a.score);
 
-        // 5. "All Time Vibes" — top 30 regardless of listing
-        const allTimeVibes = allGvcScores.slice(0, 30).map(item => {
+        // 5. "All Time Vibes" — top 50 regardless of listing (client filters grails)
+        const allTimeVibes = allGvcScores.slice(0, 50).map(item => {
             const char = characterMap.get(item.id);
             return {
                 id: item.id,
@@ -344,7 +326,8 @@ export async function GET(request: NextRequest) {
                 url: char?.url || '',
                 score: Math.round(item.score * 10) / 10,
                 matchingTraits: Array.from(new Set(item.matchingTraits)).slice(0, 3),
-                opensea: `https://opensea.io/assets/ethereum/${CONTRACT_ADDRESS}/${item.id}`
+                opensea: `https://opensea.io/assets/ethereum/${CONTRACT_ADDRESS}/${item.id}`,
+                isGrail: item.isGrail
             };
         });
 
@@ -352,12 +335,10 @@ export async function GET(request: NextRequest) {
         const listings = await fetchActiveListings();
         const listingMap = new Map(listings.map(l => [l.tokenId, l]));
 
+        // Return all listed recommendations (client filters by budget)
         const listedRecommendations = allGvcScores
-            .filter(item => {
-                const listing = listingMap.get(item.id);
-                return listing && listing.price <= maxBudget;
-            })
-            .slice(0, 30)
+            .filter(item => listingMap.has(item.id))
+            .slice(0, 100)
             .map(item => {
                 const char = characterMap.get(item.id);
                 const listing = listingMap.get(item.id)!;
@@ -389,8 +370,7 @@ export async function GET(request: NextRequest) {
             allTimeVibes,
             listedRecommendations,
             favoriteTraits,
-            totalListings: listings.length,
-            maxBudget
+            totalListings: listings.length
         });
 
     } catch (error) {

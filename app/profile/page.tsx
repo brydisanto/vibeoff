@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -71,6 +71,26 @@ interface RecommendationData {
         timesRejected: number;
     }[];
     totalListings?: number;
+}
+
+interface AllTimeVibe {
+    id: number;
+    name: string;
+    url: string;
+    score: number;
+    matchingTraits: string[];
+    opensea: string;
+    isGrail: boolean;
+}
+
+interface ListedRec {
+    id: number;
+    name: string;
+    url: string;
+    score: number;
+    matchingTraits: string[];
+    price: number;
+    opensea: string;
 }
 
 
@@ -251,50 +271,58 @@ export default function ProfilePage() {
             .catch(err => console.error('Failed to calc rank:', err));
     }, [address, gvcs]);
 
-    // Fetch Recommendations
+    // Fetch Recommendations (once per wallet — no re-fetch on slider/toggle)
     useEffect(() => {
         if (!address) {
             setRecommendations(null);
             return;
         }
 
-        const abortController = new AbortController();
+        let cancelled = false;
 
         const fetchRecs = async () => {
             setRecLoading(true);
             try {
-                const res = await fetch(`/api/recommendations?wallet=${address}&maxBudget=${maxBudget}&hideGrails=${hideGrails}`, {
-                    signal: abortController.signal,
+                const res = await fetch(`/api/recommendations?wallet=${address}`, {
                     cache: 'no-store'
                 });
                 const data = await res.json();
-                if (data.error) {
-                    console.error('Recs error:', data.error);
-                } else {
-                    setRecommendations(data);
+                if (!cancelled) {
+                    if (data.error) {
+                        console.error('Recs error:', data.error);
+                    } else {
+                        setRecommendations(data);
+                    }
                 }
             } catch (err: any) {
-                if (err.name !== 'AbortError') {
+                if (!cancelled) {
                     console.error('Failed to fetch recs:', err);
                 }
             } finally {
-                // Only toggle loading off if this request wasn't aborted
-                if (!abortController.signal.aborted) {
+                if (!cancelled) {
                     setRecLoading(false);
                 }
             }
         };
 
-        // Debounce if triggered by slider
-        const timer = setTimeout(() => {
-            fetchRecs();
-        }, 500);
+        fetchRecs();
 
         return () => {
-            clearTimeout(timer);
-            abortController.abort();
+            cancelled = true;
         };
-    }, [address, maxBudget, hideGrails]);
+    }, [address]);
+
+    // Client-side filtering (instant — no network requests)
+    const filteredListedRecs = useMemo(() => {
+        if (!recommendations?.listedRecommendations) return [];
+        return (recommendations.listedRecommendations as ListedRec[]).filter(r => r.price <= maxBudget);
+    }, [recommendations?.listedRecommendations, maxBudget]);
+
+    const filteredAllTimeVibes = useMemo(() => {
+        if (!recommendations?.allTimeVibes) return [];
+        if (!hideGrails) return recommendations.allTimeVibes as AllTimeVibe[];
+        return (recommendations.allTimeVibes as AllTimeVibe[]).filter(r => !r.isGrail);
+    }, [recommendations?.allTimeVibes, hideGrails]);
 
     const getWinRate = (gvc: GvcStats) => {
         if (gvc.allTime.matches === 0) return 0;
@@ -630,7 +658,7 @@ export default function ProfilePage() {
                                                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                                                         }`}
                                                 >
-                                                    Listed ({recommendations?.listedRecommendations?.length || 0})
+                                                    Listed ({filteredListedRecs.length})
                                                 </button>
                                                 <button
                                                     onClick={() => setActiveRecTab('alltime')}
@@ -646,7 +674,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                        {(activeRecTab === 'listed' ? recommendations?.listedRecommendations : recommendations?.allTimeVibes)?.map((gvc, index) => {
+                                        {(activeRecTab === 'listed' ? filteredListedRecs : filteredAllTimeVibes)?.map((gvc, index) => {
                                             const isTopPick = index === 0;
                                             return (
                                                 <a
@@ -705,7 +733,7 @@ export default function ProfilePage() {
                                             );
                                         })}
 
-                                        {activeRecTab === 'listed' && (!recommendations?.listedRecommendations || recommendations.listedRecommendations.length === 0) && (
+                                        {activeRecTab === 'listed' && filteredListedRecs.length === 0 && (
                                             <div className="col-span-full py-12 text-center text-gray-500 font-mundial bg-zinc-900/30 rounded-2xl border border-white/5 border-dashed">
                                                 No matches found under {maxBudget} ETH.<br />
                                                 <button onClick={() => setMaxBudget(prev => Math.min(5, prev + 0.5))} className="text-[#FFE048] hover:underline mt-2">
