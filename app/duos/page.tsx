@@ -223,23 +223,21 @@ export default function DuosPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [matchup, remainingVotes, showLeaderboard, isTransitioning, handleVote]);
 
-    // Fetch OpenSea owners for current matchup
+    // Fetch OpenSea owners for current matchup (non-blocking, fire-and-forget)
     useEffect(() => {
         if (!matchup) return;
 
-        const fetchOwners = async () => {
-            for (const duo of matchup) {
-                if (!duoOwners[duo.id]) {
-                    // Fetch owner for first GVC of the duo
-                    const ownerData = await fetchNftOwner(duo.gvc1.id);
+        // Fire both owner lookups in parallel, don't block rendering
+        matchup.forEach(duo => {
+            if (!duoOwners[duo.id]) {
+                fetchNftOwner(duo.gvc1.id).then(ownerData => {
                     if (ownerData) {
                         const info = getOwnerDisplayAndLink(ownerData, duo.owner);
                         setDuoOwners(prev => ({ ...prev, [duo.id]: info }));
                     }
-                }
+                }).catch(() => { });
             }
-        };
-        fetchOwners();
+        });
     }, [matchup]);
 
     // Clear transition state when matchup loads
@@ -346,14 +344,14 @@ export default function DuosPage() {
         <>
             <main className="min-h-screen bg-black text-white bg-[url('/grid.svg')] bg-center">
                 <div className="w-full min-h-screen p-4 md:p-8 flex flex-col items-center">
-                    {/* Image Preloader */}
+                    {/* Image Preloader: Only preload the very next matchup (4 images) to prevent mobile connection starvation */}
                     <div className="hidden" aria-hidden="true">
-                        {matchupQueue.map((pair, i) => (
+                        {matchupQueue.slice(0, 1).map((pair, i) => (
                             <div key={`preload-${i}-${pair[0].id}-${pair[1].id}`}>
-                                <Image src={pair[0].gvc1.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
-                                <Image src={pair[0].gvc2.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
-                                <Image src={pair[1].gvc1.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
-                                <Image src={pair[1].gvc2.url} alt="" width={1} height={1} loading="eager" unoptimized priority />
+                                <img src={pair[0].gvc1.url} alt="" width={1} height={1} loading="eager" decoding="async" />
+                                <img src={pair[0].gvc2.url} alt="" width={1} height={1} loading="eager" decoding="async" />
+                                <img src={pair[1].gvc1.url} alt="" width={1} height={1} loading="eager" decoding="async" />
+                                <img src={pair[1].gvc2.url} alt="" width={1} height={1} loading="eager" decoding="async" />
                             </div>
                         ))}
                     </div>

@@ -52,18 +52,23 @@ export async function GET(request: NextRequest) {
 
         const dateKey = getDateKey();
         const voteKey = `duos:votes:${dateKey}:${deviceId}`;
-        const sessionId = request.headers.get('x-duos-session-id');
-        const stateKey = sessionId ? `duos:state:${dateKey}:${sessionId}` : null;
 
         // ============================================================
         // OPTIMIZATION 1: Pipeline all initial reads into ONE round-trip
         // ============================================================
+        const sessionId = request.headers.get('x-duos-session-id');
+        const stateKey = sessionId ? `duos:state:${dateKey}:${sessionId}` : null;
+        const penaltyLockKey = sessionId ? `penalty_lock:${sessionId}` : null;
+
         const pipeline = kv.pipeline();
         if (stateKey) {
             pipeline.get(stateKey);
         }
         pipeline.get(voteKey);
         pipeline.zrange('duos:all', 0, -1);
+        if (penaltyLockKey) {
+            pipeline.get(penaltyLockKey);
+        }
 
         const pipelineResults = await pipeline.exec();
 
@@ -72,16 +77,13 @@ export async function GET(request: NextRequest) {
         const lastAction = stateKey ? pipelineResults[resultIndex++] as string | null : null;
         const currentVotes = (pipelineResults[resultIndex++] as number) || 0;
         const allDuoIds = pipelineResults[resultIndex++] as string[];
+        const isLocked = penaltyLockKey ? pipelineResults[resultIndex++] : null;
 
         // ============================================================
         // OPTIMIZATION 2: Non-blocking writes (don't await)
         // ============================================================
         // Check if we should skip penalty (e.g. background fetch or wallet connect)
         const skipPenalty = request.nextUrl.searchParams.get('skipPenalty') === 'true';
-
-        // Rate limit penalty to max once per 3 seconds (fixes Strict Mode double-count)
-        const penaltyLockKey = `penalty_lock:${sessionId}`;
-        const isLocked = await kv.get(penaltyLockKey);
 
         // Calculate refresh penalty
         // Only penalize if:
@@ -101,7 +103,7 @@ export async function GET(request: NextRequest) {
             kv.incr(voteKey);
             kv.expire(voteKey, 60 * 60 * 24);
             // Set lock to prevent double-penalty in immediate succession
-            kv.set(penaltyLockKey, '1', { ex: 3 });
+            if (penaltyLockKey) kv.set(penaltyLockKey, '1', { ex: 3 });
         }
 
         // Check for wallet address to get bonus votes
