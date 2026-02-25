@@ -315,7 +315,7 @@ export default function ProfilePage() {
     // Client-side filtering (instant — no network requests)
     const filteredListedRecs = useMemo(() => {
         if (!recommendations?.listedRecommendations) return [];
-        return (recommendations.listedRecommendations as ListedRec[]).filter(r => r.price <= maxBudget);
+        return (recommendations.listedRecommendations as ListedRec[]).filter(r => r.price <= maxBudget).slice(0, 30);
     }, [recommendations?.listedRecommendations, maxBudget]);
 
     const filteredAllTimeVibes = useMemo(() => {
