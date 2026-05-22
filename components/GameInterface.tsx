@@ -14,7 +14,6 @@ export default function GameInterface() {
     const { gameState, matchup, matchupQueue, vote, remainingVotes, canVote, refreshLimit, loading } = useGameLogic(address);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [fetchedStats, setFetchedStats] = useState<Record<string, any>>({});
-    const [dailyVoteAvailable, setDailyVoteAvailable] = useState(false);
     const [walletConnected, setWalletConnected] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
 
@@ -28,16 +27,6 @@ export default function GameInterface() {
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
         window.open(twitterUrl, '_blank', 'width=550,height=520');
     };
-
-    // Check if daily vote is available
-    useEffect(() => {
-        fetch('/api/daily')
-            .then(res => res.json())
-            .then(data => {
-                setDailyVoteAvailable(!data.hasVoted);
-            })
-            .catch(() => setDailyVoteAvailable(false));
-    }, []);
 
     // Check if wallet is connected (from localStorage)
     useEffect(() => {
@@ -113,7 +102,7 @@ export default function GameInterface() {
 
                 {/* Header Stats - Responsive */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-3 mb-4 md:mb-8 w-full">
-                    {/* Split Badge Vote Counter + Daily Icon */}
+                    {/* Vote Counter Badge */}
                     <div className="flex items-stretch gap-2">
                         <div className="flex rounded-lg overflow-hidden">
                             <div className="bg-[#1a1a1a] px-3 md:px-4 py-2 md:py-3 flex items-center">
@@ -123,26 +112,6 @@ export default function GameInterface() {
                                 <span className="text-black font-mono text-lg md:text-xl font-black">{remainingVotes ?? '...'}</span>
                             </div>
                         </div>
-
-                        {/* THE DAILY Icon - B2 Checkbox */}
-                        <a
-                            href="/daily"
-                            className="px-3 md:px-4 rounded-lg bg-[#1a1a1a] text-gray-400 hover:text-white hover:bg-[#252525] transition-all relative flex items-center"
-                            title={dailyVoteAvailable ? 'THE DAILY - Vote now!' : 'THE DAILY - Already voted'}
-                        >
-                            {/* Notification badge */}
-                            <span className={`absolute -top-1.5 -right-1.5 text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-black ${dailyVoteAvailable
-                                ? 'bg-red-500 text-white animate-pulse'
-                                : 'bg-gvc-gold text-black'
-                                }`}>
-                                {dailyVoteAvailable ? '1' : '✓'}
-                            </span>
-                            {/* Checkbox icon */}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="9 11 12 14 22 4" />
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                            </svg>
-                        </a>
 
                         {/* Profile Icon */}
                         <a
